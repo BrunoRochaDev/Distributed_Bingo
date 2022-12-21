@@ -10,9 +10,22 @@ class Message:
         return self.to_json()
 
 class Authenticate(Message):
-    """Message for players authenticating themselves to the playing area"""
-    def __init__(self, nickname : str, public_key : str, signature : str):
+    """Message for players authenticating themselves to the playing area. Uses challenge-response authentication"""
+    def __init__(self, public_key : str, challenge : str = None, response : str = None, success : bool = False):
         self.header = 'AUTH'
+        self.public_key = public_key
+        self.challenge = challenge
+        self.response = response
+        self.success = success
+
+    @classmethod
+    def parse(cls, j : str):
+        return Authenticate(j['public_key'], j['challenge'], j['response'], j['success'])
+
+class Register(Message):
+    """Message for players registering themselves to the playing area"""
+    def __init__(self, nickname : str, public_key : str, signature : str):
+        self.header = 'REGISTER'
         self.nickname = nickname
         self.public_key = public_key
         self.signature = signature
@@ -20,6 +33,7 @@ class Authenticate(Message):
     @classmethod
     def parse(cls, j : str):
         return Authenticate(j['nickname'], j['public_key'], j['signature'])
+
 
 class Proto:
 
@@ -54,6 +68,10 @@ class Proto:
 
     @classmethod
     def parse_msg(self, msg_str: str):
+
+        if msg_str == None:
+            return None
+
         j = json.loads(msg_str)
 
         if j['header'] == 'AUTH':

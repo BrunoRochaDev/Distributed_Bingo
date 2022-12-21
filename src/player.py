@@ -7,6 +7,7 @@ import os
 from src.protocol import *
 
 class Player:
+
     PLAYING_AREA_PORT = 1024
 
     # set sys.stdin non-blocking
@@ -17,7 +18,11 @@ class Player:
         print(f'Your nickname is "{nickname}".')
         self.nickname = nickname
 
+        self.authenticated = False # not authenticated at the start
+        self.registered = False # not registered at the start
+
         # connects to the playing area
+        self.running = True
         self.connect()
         self.loop()
 
@@ -39,24 +44,52 @@ class Player:
 
         print('To authenticate yourself to the playing area, type "AUTH"')
         self.selector.register(sys.stdin, selectors.EVENT_READ, self.handle_input)
-        while True:
+        while self.running:
 
             events = self.selector.select(timeout=None)
 
-            #Loops through every event in the selector...
+            # loops through every event in the selector...
             for key, _ in events:
                 callback = key.data
                 callback(key.fileobj)
 
-    def service_connection(self, sock):
-        print('uwu')
+    def service_connection(self, sock : socket):
+
+        msg = Proto.recv_msg(sock)
+        if msg:
+            if msg.header == 'AUTH':
+                self.handle_authenticate(sock, msg)
+        else:
+            print(f"Connection with the playing area is closed.")
+            self.sel.unregister(sock)
+            sock.close()
+            self.running = False
+
+    def handle_authenticate(self, sock : socket, msg : Authenticate):
+        # only respond if not authenticated. just in case
+        if not self.authenticated:
+
+            # if the playing area has authenticated us...
+            if msg.success:
+                print('[AUTH] You have passed the challenge and are authenticated.')
+                self.authenticated = True
+                return
+
+            print(f'[AUTH] Received "{msg.challenge}" challenge from the playing area. Responding...')
+
+            # TODO: properly sign the response
+            response = 'response'
+            msg.response = response
+
+            # send it back to the playing area
+            Proto.send_msg(sock, msg)
 
     def handle_input(self, stdin):
         """Receives the typing input"""
         text = format(stdin.read()).strip('\n').upper()
 
-        if text == 'AUTH':
-            print('Authenticating...')
-            Proto.send_msg(self.sock, Authenticate(self.nickname, 'public_key', 'signature'))
+        if text == 'AUTH' and not self.authenticated:
+            print('[AUTH] Asking the playing area for a challenge...')
+            Proto.send_msg(self.sock, Authenticate('CC_public'))
         else:
             print('Invalid input.')

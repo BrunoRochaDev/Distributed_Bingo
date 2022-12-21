@@ -3,6 +3,10 @@ import socket # websockets
 import sys # for closing the app
 import selectors # for multiplexing
 
+# for generating random challenges
+import random
+import string
+
 from src.protocol import *
 
 class PlayingArea:
@@ -14,6 +18,9 @@ class PlayingArea:
     # the number of players needed for a game to start
     PLAYER_NUM = 3
 
+    # length of the challenge string for authentication
+    CHALLENGE_LENGTH = 14
+
     def __init__(self, card_size : int, deck_size : int):
         self.card_size = card_size
         self.deck_size = deck_size
@@ -21,6 +28,8 @@ class PlayingArea:
         self.playing = False # the game has not started
 
         self.users = {} # dict for associating sequence to player data
+        self.authorized_keys = set() # set for authorized public keys
+        self.challenges= {} # dict for assoaciating public key to the challenge for users not yet authenticated
 
         # creates and starts the server
         self.server_setup()
@@ -54,11 +63,11 @@ class PlayingArea:
             while True:
                 events = self.selector.select()
 
-                # Loops through every event in the selector...
+                # loops through every event in the selector...
                 for key, _ in events:
-                    # If the data is none, that means that the socket has not yet been accepted
+                    # if the data is none, that means that the socket has not yet been accepted
                     if key.data is None:
-                        #Accept the connection
+                        # accept the connection
                         self.accept_connection(key.fileobj) # key.fileobj is the socket object
                     else:
                         self.service_connection(key)
@@ -83,13 +92,63 @@ class PlayingArea:
         #print('msg :', msg)
 
         if msg.header == 'AUTH':
-            self.authenticate(msg)
+            self.authenticate(sock, msg)
 
-    def authenticate(self, msg : Authenticate):
-        print(f'Authenticating user "{msg.nickname}"...')
+    def authenticate(self, sock : socket, msg : Authenticate):
+        """Challenge-response authentication for Portuguese citzens"""
+
+        # helper function for generating random strings, used for challenges
+        def get_random_string(length : int):
+            # With combination of lower and upper case
+            return ''.join(random.choice(string.ascii_letters) for i in range(length))
+
+        public_key = msg.public_key
+
+        # if the authentication progress has already begun...
+        if public_key in self.challenges.keys():
+            challenge = self.challenges[public_key]
+
+            # if challenge does not match, player is trying to evade authentication
+            if challenge != msg.challenge:
+                # TODO: blacklist connection
+                return
+
+            response = msg.response
+
+            # TODO: verify the signature
+            if False: # if signature if forged
+                # TODO: blacklist connection
+                return
+
+            # at this point, the user is authenticated as a Portuguese citzen
+            print(f'[AUTH] "{public_key}" has passed the challenge and it\'s authenticated.')
+            self.challenges.pop(public_key) 
+            self.authorized_keys.add(public_key)
+
+            # let the user know they are authenticated 
+            msg.success = True
+            Proto.send_msg(sock, msg)
+
+        # if it's starting now...
+        else:
+            print(f'[AUTH] Sending challenge to "{public_key}"...')
+
+            # message is not supposed to have challenge or response yet
+            if msg.challenge or msg.response:
+                # TODO: blacklist connection
+                return
+
+            # create random challenge
+            challenge = get_random_string(self.CHALLENGE_LENGTH)
+
+            # store in the dict for later steps
+            self.challenges[public_key] = challenge
+
+            # update message and send it back. wait for response
+            msg.challenge = challenge
+            Proto.send_msg(sock, msg)
 
     def poweroff(self):
         """Shutdowns the server"""
-
         self.sock.close()
         sys.exit()

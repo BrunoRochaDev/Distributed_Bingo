@@ -32,6 +32,9 @@ class PlayingArea:
         # binds the server socket to an interface address and port
         self.sock.bind((socket.gethostname(), self.PORT))
 
+        # starts listening for clients...
+        self.sock.listen()
+
         print(f"Started server at port {self.PORT}.")
 
         # creates the selector object
@@ -46,39 +49,32 @@ class PlayingArea:
             while True:
                 events = self.selector.select()
 
-                # loops through every event in the selector...
-                for key, mask in events:
-                    # if the data is none, that means that the socket has not yet been accepted yet
+                # Loops through every event in the selector...
+                for key, _ in events:
+                    # If the data is none, that means that the socket has not yet been accepted
                     if key.data is None:
-                        # accepts the connection
-                        connection, _ = key.fileobj.accept()
-
-                        # adds to the selector
-                        connection.setblocking(False)
-                        self.selector.register(connection, selectors.EVENT_READ, data="")
-                        print('accepted')
+                        #Accept the connection
+                        self.accept_connection(key.fileobj) # key.fileobj is the socket object
                     else:
-                        pass
+                        self.service_connection(key)
 
         # shutdowns if the user interrupts the proccess
         except KeyboardInterrupt:
             self.poweroff()
 
-    def receive_connection(self, data : dict):
-        """Receives a connection from a user"""
+    def accept_connection(self, sock):
+        """Accepts the connection from a client (player)"""
 
-        # create user dataclass from dict
-        seq = len(self.users)
-        user = UserData(
-                sequence=seq,
-                nickname=data['nickname'],
-                public_key=data['public_key']
-                )
+        connection, address = sock.accept()
+        print(f"Accepted connection from {address}.")
 
-        # insert in the user dictionary
-        self.users[seq] = user
+        self.selector.register(connection, selectors.EVENT_READ, data="")
 
-        print(user)
+    def service_connection(self, key):
+        sock = key.fileobj
+        data = key.data
+
+        #print("Received message")
 
     def poweroff(self):
         """Shutdowns the server"""

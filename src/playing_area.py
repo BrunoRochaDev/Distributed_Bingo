@@ -3,11 +3,16 @@ import socket # websockets
 import sys # for closing the app
 import selectors # for multiplexing
 
+from src.protocol import *
+
 class PlayingArea:
     """The secure playing field"""
 
     # should be >= 1024
     PORT = 1024
+
+    # the number of players needed for a game to start
+    PLAYER_NUM = 3
 
     def __init__(self, card_size : int, deck_size : int):
         self.card_size = card_size
@@ -35,7 +40,7 @@ class PlayingArea:
         # starts listening for clients...
         self.sock.listen()
 
-        print(f"Started server at port {self.PORT}.")
+        print(f"Started playing area at port {self.PORT}.")
 
         # creates the selector object
         self.selector = selectors.DefaultSelector()
@@ -74,7 +79,14 @@ class PlayingArea:
         sock = key.fileobj
         data = key.data
 
-        #print("Received message")
+        msg = Proto.recv_msg(sock)
+        #print('msg :', msg)
+
+        if msg.header == 'AUTH':
+            self.authenticate(msg)
+
+    def authenticate(self, msg : Authenticate):
+        print(f'Authenticating user "{msg.nickname}"...')
 
     def poweroff(self):
         """Shutdowns the server"""

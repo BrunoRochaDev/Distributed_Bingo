@@ -61,7 +61,7 @@ class Player:
                 self.handle_authenticate(sock, msg)
         else:
             print(f"Connection with the playing area is closed.")
-            self.sel.unregister(sock)
+            self.selector.unregister(sock)
             sock.close()
             self.running = False
 
@@ -72,6 +72,7 @@ class Player:
             # if the playing area has authenticated us...
             if msg.success:
                 print('[AUTH] You have passed the challenge and are authenticated.')
+                print('To register yourself, type "REGISTER"')
                 self.authenticated = True
                 return
 

@@ -68,8 +68,7 @@ class Proto:
 
     @classmethod
     def parse_msg(self, msg_str: str):
-
-        if msg_str == None:
+        if not msg_str:
             return None
 
         j = json.loads(msg_str)

@@ -89,10 +89,15 @@ class PlayingArea:
         data = key.data
 
         msg = Proto.recv_msg(sock)
-        #print('msg :', msg)
 
-        if msg.header == 'AUTH':
-            self.authenticate(sock, msg)
+        # if message is valid
+        if msg:
+            if msg.header == 'AUTH':
+                self.authenticate(sock, msg)
+        else:
+            print(f"Connection with a player has been lost.")
+            self.selector.unregister(sock)
+            sock.close()
 
     def authenticate(self, sock : socket, msg : Authenticate):
         """Challenge-response authentication for Portuguese citzens"""

@@ -24,15 +24,17 @@ class Authenticate(Message):
 
 class Register(Message):
     """Message for players registering themselves to the playing area"""
-    def __init__(self, nickname : str, public_key : str, signature : str):
+    def __init__(self, nickname : str, playing_key : str, auth_key : str, signature : str, success : bool = False):
         self.header = 'REGISTER'
         self.nickname = nickname
-        self.public_key = public_key
+        self.playing_key = playing_key
+        self.auth_key = auth_key
         self.signature = signature
+        self.success = success
 
     @classmethod
     def parse(cls, j : str):
-        return Authenticate(j['nickname'], j['public_key'], j['signature'])
+        return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'])
 
 
 class Proto:
@@ -75,6 +77,8 @@ class Proto:
 
         if j['header'] == 'AUTH':
             return Authenticate.parse(j)
+        elif j['header'] == 'REGISTER':
+            return Register.parse(j)
         else:
             raise ProtoBadFormat(msg_str)
 

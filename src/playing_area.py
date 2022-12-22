@@ -27,7 +27,7 @@ class PlayingArea:
 
         self.playing = False # the game has not started
 
-        self.users = {} # dict for associating sequence to player data
+        self.players = [] # list for holding player data (not caller)
         self.authorized_keys = set() # set for authorized public keys
         self.challenges= {} # dict for assoaciating public key to the challenge for users not yet authenticated
 
@@ -94,6 +94,9 @@ class PlayingArea:
         if msg:
             if msg.header == 'AUTH':
                 self.authenticate(sock, msg)
+
+            if msg.header == 'REGISTER':
+                self.register(sock, msg)
         else:
             print(f"Connection with a player has been lost.")
             self.selector.unregister(sock)
@@ -102,33 +105,38 @@ class PlayingArea:
     def authenticate(self, sock : socket, msg : Authenticate):
         """Challenge-response authentication for Portuguese citzens"""
 
+        # don't bother if it's already authorized
+        if msg.public_key in self.authorized_keys:
+            print(f'[AUTH] "{msg.public_key}" is already authorized.')
+            # let the user know they are authenticated 
+            msg.success = True
+            Proto.send_msg(sock, msg)
+            return
+
         # helper function for generating random strings, used for challenges
         def get_random_string(length : int):
             # With combination of lower and upper case
             return ''.join(random.choice(string.ascii_letters) for i in range(length))
 
-        public_key = msg.public_key
-
         # if the authentication progress has already begun...
-        if public_key in self.challenges.keys():
-            challenge = self.challenges[public_key]
+        if msg.public_key in self.challenges.keys():
+            challenge = self.challenges[msg.public_key]
 
             # if challenge does not match, player is trying to evade authentication
             if challenge != msg.challenge:
                 # TODO: blacklist connection
                 return
 
-            response = msg.response
-
             # TODO: verify the signature
             if False: # if signature if forged
                 # TODO: blacklist connection
+                print(f'[AUTH] "{msg.public_key}" has forged it\'s signature. Request denied.')
                 return
 
             # at this point, the user is authenticated as a Portuguese citzen
-            print(f'[AUTH] "{public_key}" has passed the challenge and it\'s authenticated.')
-            self.challenges.pop(public_key) 
-            self.authorized_keys.add(public_key)
+            print(f'[AUTH] "{msg.public_key}" has passed the challenge and it\'s authenticated.')
+            self.challenges.pop(msg.public_key) 
+            self.authorized_keys.add(msg.public_key)
 
             # let the user know they are authenticated 
             msg.success = True
@@ -136,8 +144,6 @@ class PlayingArea:
 
         # if it's starting now...
         else:
-            print(f'[AUTH] Sending challenge to "{public_key}"...')
-
             # message is not supposed to have challenge or response yet
             if msg.challenge or msg.response:
                 # TODO: blacklist connection
@@ -146,12 +152,52 @@ class PlayingArea:
             # create random challenge
             challenge = get_random_string(self.CHALLENGE_LENGTH)
 
+            print(f'[AUTH] Sending "{challenge}" challenge to "{msg.public_key}"...')
+
             # store in the dict for later steps
-            self.challenges[public_key] = challenge
+            self.challenges[msg.public_key] = challenge
 
             # update message and send it back. wait for response
             msg.challenge = challenge
             Proto.send_msg(sock, msg)
+
+    def register(self, sock : socket, msg : Register):
+        print(f'[REG] Received register request...')
+
+        # users cannot register themselves before they are authorized
+        if msg.auth_key not in self.authorized_keys:
+            # TODO: blacklist connection
+            print(f'[REG] ...user was not authorized. Request denied.')
+            return
+
+        # nickname cannot be already taken
+        if any(player.nickname == msg.nickname for player in self.players):
+            # Send it back with success as False to let them know
+            print(f'[REG] ...nickname already taken. Request denied.')
+            Proto.send_msg(sock, msg)
+            return
+
+        # key cannot be already taken
+        if any(player.public_key == msg.playing_key for player in self.players):
+            # Send it back with success as False to let them know
+            print(f'[REG] ...public key already taken. Request denied.')
+            Proto.send_msg(sock, msg)
+            return
+
+        # signature must be valid
+        if False: # signature is not valid
+            # TODO: blacklist connection
+            print(f'[REG] ...signature forged. Request denied.')
+            return
+
+        # at this point, user is registered
+        print(f'[REG] ...User "{msg.nickname}" with public key "{msg.playing_key}" registered.')
+        player_data = UserData(sequence = len(self.players) + 1, nickname = msg.nickname, public_key = msg.playing_key)
+        self.players.append(player_data)
+
+        # inform that registration was successful
+        msg.success = True
+        Proto.send_msg(sock, msg)
 
     def poweroff(self):
         """Shutdowns the server"""

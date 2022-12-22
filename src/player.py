@@ -58,14 +58,16 @@ class Player:
         msg = Proto.recv_msg(sock)
         if msg:
             if msg.header == 'AUTH':
-                self.handle_authenticate(sock, msg)
+                self.authenticate(sock, msg)
+            elif msg.header == 'REGISTER':
+                self.register(sock, msg)
         else:
             print(f"Connection with the playing area is closed.")
             self.selector.unregister(sock)
             sock.close()
             self.running = False
 
-    def handle_authenticate(self, sock : socket, msg : Authenticate):
+    def authenticate(self, sock : socket, msg : Authenticate):
         # only respond if not authenticated. just in case
         if not self.authenticated:
 
@@ -85,6 +87,17 @@ class Player:
             # send it back to the playing area
             Proto.send_msg(sock, msg)
 
+    def register(self, sock : socket, msg : Register):
+        # if the registration was a success
+        if msg.success:
+            self.registred = True
+            print('[REG] ...registration was a success.')
+        # was not a success
+        else:
+            print(f'[REG] ...registration failed. The nickname "{self.nickname}" might be already taken, try another.')
+            self.running = False
+            pass
+
     def handle_input(self, stdin):
         """Receives the typing input"""
         text = format(stdin.read()).strip('\n').upper()
@@ -92,5 +105,9 @@ class Player:
         if text == 'AUTH' and not self.authenticated:
             print('[AUTH] Asking the playing area for a challenge...')
             Proto.send_msg(self.sock, Authenticate('CC_public'))
+
+        elif text == 'REGISTER' and not self.registered and self.authenticated:
+            print(f'[REG] Registering yourself to the playing area as "{self.nickname}"...')
+            Proto.send_msg(self.sock, Register(self.nickname, "playing_key", "CC_public", "signature"))
         else:
             print('Invalid input.')

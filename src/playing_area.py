@@ -99,9 +99,10 @@ class PlayingArea:
         if msg:
             if msg.header == 'AUTH':
                 self.authenticate(sock, msg)
-
-            if msg.header == 'REGISTER':
+            elif msg.header == 'REGISTER':
                 self.register(sock, msg)
+            elif msg.header == 'GETUSERS':
+                self.get_user_list(sock, msg)
         else:
             print(f"[NET] Connection with a user has been lost.")
 
@@ -241,6 +242,21 @@ class PlayingArea:
 
         # trigger party changed event since someone joined
         self.party_changed()
+
+    def get_user_list(self, sock : socket, msg : GetUsers):
+        """Returns to the user the list of connected users"""
+
+        print('[MISC] Received request to see registed users. Sending the list...')
+
+        # add the players
+        res = list(self.players.values())
+
+        # add the caller if exists
+        if self.caller:
+            res.append(caller[1])
+
+        msg.response = res
+        Proto.send_msg(sock, msg)
 
     def party_changed(self):
         player_count = len(self.players)

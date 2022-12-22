@@ -36,6 +36,18 @@ class Register(Message):
     def parse(cls, j : dict):
         return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'])
 
+class GetUsers(Message):
+    """Message for getting a list of registered users"""
+    def __init__(self, public_key : str, signature : str, response : list = None):
+        self.header = 'GETUSERS'
+        self.public_key = public_key
+        self.signature = signature
+        self.response = response
+
+    @classmethod
+    def parse(cls, j : dict):
+        return GetUsers(j['public_key'], j['signature'], j['response'])
+
 class PartyUpdate(Message):
     """Message for updating registered users on how big the party is"""
     def __init__(self, current : int, maximum : int):
@@ -79,8 +91,9 @@ class Proto:
             
             # sends the message + the header
             connection.send(header + encoded_msg)
-        except:
-            print("An error occurred while sending the message")
+        except Exception as e:
+            print("[PROTO] An error occurred while sending the message")
+            raise e
 
     @classmethod
     def recv_msg(cls, connection: socket) -> Message:
@@ -105,6 +118,8 @@ class Proto:
             return Authenticate.parse(j)
         elif j['header'] == 'REGISTER':
             return Register.parse(j)
+        elif j['header'] == 'GETUSERS':
+            return GetUsers.parse(j)
         elif j['header'] == 'PARTY':
             return PartyUpdate.parse(j)
         else:

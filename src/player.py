@@ -42,7 +42,7 @@ class Player:
     def loop(self):
         """Get input and receives messages"""
 
-        print('To authenticate yourself to the playing area, type "AUTH"')
+        print('- To authenticate yourself to the playing area, type "AUTH"')
         self.selector.register(sys.stdin, selectors.EVENT_READ, self.handle_input)
         while self.running:
 
@@ -61,6 +61,8 @@ class Player:
                 self.authenticate(sock, msg)
             elif msg.header == 'REGISTER':
                 self.register(sock, msg)
+            elif msg.header == 'GETUSERS':
+                print(f'[MISC] Registered users: {msg.response}')
             elif msg.header == 'PARTY':
                 print(f'[GAME] Party status: {msg.current}/{msg.maximum}')
                 if msg.current == msg.maximum:
@@ -80,7 +82,8 @@ class Player:
             # if the playing area has authenticated us...
             if msg.success:
                 print('[AUTH] You have passed the challenge and are authenticated.')
-                print('To register yourself, type "REGISTER"')
+                print('- To register yourself, type "REGISTER"')
+                print('- Authenticated users can see registed users. type "GETUSERS".')
                 self.authenticated = True
                 return
 
@@ -106,12 +109,14 @@ class Player:
 
     def handle_input(self, stdin):
         """Receives the typing input"""
-        text = format(stdin.read()).strip('\n').upper()
+        text = format(stdin.read()).upper().strip('\n')
 
         if text == 'AUTH' and not self.authenticated:
             print('[AUTH] Asking the playing area for a challenge...')
             Proto.send_msg(self.sock, Authenticate('CC_public'))
-
+        elif text == 'GETUSERS' and self.authenticated:
+            print('[MISC] Asking the playing area for the list of registed users...')
+            Proto.send_msg(self.sock, GetUsers("CC_public", "signature"))
         elif text == 'REGISTER' and not self.registered and self.authenticated:
             print(f'[REG] Registering yourself to the playing area as "{self.nickname}"...')
             Proto.send_msg(self.sock, Register(self.nickname, "playing_key", "CC_public", "signature"))

@@ -102,8 +102,10 @@ class PlayingArea:
             if msg.header == 'REGISTER':
                 self.register(sock, msg)
         else:
-            print(f"[NET] Connection with a player has been lost.")
+            print(f"[NET] Connection with a user has been lost.")
             # remove data associated with the socket
+            if self.caller and self.caller[0] == sock:
+                self.caller = None
             if sock in self.authorized_keys.keys():
                 self.authorized_keys.pop(sock)
             if sock in self.players.keys():

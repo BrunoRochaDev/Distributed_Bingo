@@ -57,6 +57,12 @@ class GameOver(Message):
     def parse(cls, j : dict):
         return GameOver(j['status'])
 
+    def __str__(self):
+        if self.status == 'player_left':
+            return 'Game aborted because a player left.'
+        else:
+            return 'Error :('
+
 class Proto:
 
     HEADER_SIZE = 4

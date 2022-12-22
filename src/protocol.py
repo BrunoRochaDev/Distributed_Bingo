@@ -36,6 +36,16 @@ class Register(Message):
     def parse(cls, j : str):
         return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'])
 
+class PartyUpdate(Message):
+    """Message for updating registered users on how big the party is"""
+    def __init__(self, current : int, maximum : int):
+        self.header = "PARTY"
+        self.current = current
+        self.maximum = maximum
+
+    @classmethod
+    def parse(cls, j : str):
+        return PartyUpdate(j['current'], j['maximum'])
 
 class Proto:
 
@@ -79,6 +89,8 @@ class Proto:
             return Authenticate.parse(j)
         elif j['header'] == 'REGISTER':
             return Register.parse(j)
+        elif j['header'] == 'PARTY':
+            return PartyUpdate.parse(j)
         else:
             raise ProtoBadFormat(msg_str)
 

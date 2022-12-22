@@ -16,7 +16,7 @@ class PlayingArea:
     PORT = 1024
 
     # the number of players needed for a game to start
-    PLAYER_NUM = 3
+    PARTY_MAX = 3
 
     # length of the challenge string for authentication
     CHALLENGE_LENGTH = 14
@@ -27,8 +27,8 @@ class PlayingArea:
 
         self.playing = False # the game has not started
 
-        self.players = [] # list for holding player data (not caller)
-        self.authorized_keys = set() # set for authorized public keys
+        self.players = {} # key is socket, value is userdata ; data is associated with the socket so that when an user disconnects, we clear the data
+        self.authorized_keys = {} # set for authorized public keys ; data is associated with the socket so that when an user disconnects, we clear the data
         self.challenges= {} # dict for assoaciating public key to the challenge for users not yet authenticated
 
         # creates and starts the server
@@ -49,7 +49,7 @@ class PlayingArea:
         # starts listening for clients...
         self.sock.listen()
 
-        print(f"Started playing area at port {self.PORT}.")
+        print(f"[NET] Started playing area at port {self.PORT}.")
 
         # creates the selector object
         self.selector = selectors.DefaultSelector()
@@ -80,7 +80,7 @@ class PlayingArea:
         """Accepts the connection from a client (player)"""
 
         connection, address = sock.accept()
-        print(f"Accepted connection from {address}.")
+        print(f"[NET] Accepted connection from {address}.")
 
         self.selector.register(connection, selectors.EVENT_READ, data="")
 
@@ -98,7 +98,14 @@ class PlayingArea:
             if msg.header == 'REGISTER':
                 self.register(sock, msg)
         else:
-            print(f"Connection with a player has been lost.")
+            print(f"[NET] Connection with a player has been lost.")
+            # remove data associated with the socket
+            if sock in self.authorized_keys.keys():
+                self.authorized_keys.pop(sock)
+            if sock in self.players.keys():
+                self.players.pop(sock)
+                self.party_changed() # trigger party changed event since someone left
+
             self.selector.unregister(sock)
             sock.close()
 
@@ -106,7 +113,7 @@ class PlayingArea:
         """Challenge-response authentication for Portuguese citzens"""
 
         # don't bother if it's already authorized
-        if msg.public_key in self.authorized_keys:
+        if msg.public_key in self.authorized_keys.values():
             print(f'[AUTH] "{msg.public_key}" is already authorized.')
             # let the user know they are authenticated 
             msg.success = True
@@ -136,7 +143,7 @@ class PlayingArea:
             # at this point, the user is authenticated as a Portuguese citzen
             print(f'[AUTH] "{msg.public_key}" has passed the challenge and it\'s authenticated.')
             self.challenges.pop(msg.public_key) 
-            self.authorized_keys.add(msg.public_key)
+            self.authorized_keys[sock] = msg.public_key
 
             # let the user know they are authenticated 
             msg.success = True
@@ -165,20 +172,20 @@ class PlayingArea:
         print(f'[REG] Received register request...')
 
         # users cannot register themselves before they are authorized
-        if msg.auth_key not in self.authorized_keys:
+        if msg.auth_key not in self.authorized_keys.values():
             # TODO: blacklist connection
             print(f'[REG] ...user was not authorized. Request denied.')
             return
 
         # nickname cannot be already taken
-        if any(player.nickname == msg.nickname for player in self.players):
+        if any(player.nickname == msg.nickname for player in self.players.values()):
             # Send it back with success as False to let them know
             print(f'[REG] ...nickname already taken. Request denied.')
             Proto.send_msg(sock, msg)
             return
 
         # key cannot be already taken
-        if any(player.public_key == msg.playing_key for player in self.players):
+        if any(player.public_key == msg.playing_key for player in self.players.values()):
             # Send it back with success as False to let them know
             print(f'[REG] ...public key already taken. Request denied.')
             Proto.send_msg(sock, msg)
@@ -193,11 +200,24 @@ class PlayingArea:
         # at this point, user is registered
         print(f'[REG] ...User "{msg.nickname}" with public key "{msg.playing_key}" registered.')
         player_data = UserData(sequence = len(self.players) + 1, nickname = msg.nickname, public_key = msg.playing_key)
-        self.players.append(player_data)
+        self.players[sock] = player_data # player data is associated with socket so that when a player disconnects, we clear the player data
 
         # inform that registration was successful
         msg.success = True
         Proto.send_msg(sock, msg)
+
+        # trigger party changed event since someone joined
+        self.party_changed()
+
+    def party_changed(self):
+        player_count = len(self.players)
+        print(f'[GAME] Party status: {player_count}/{self.PARTY_MAX}')
+
+        # notifies players
+        if player_count > 0:
+            print('[GAME] Notifying players on party status...')
+            for sock in self.players.keys():
+                Proto.send_msg(sock, PartyUpdate(player_count, self.PARTY_MAX))
 
     def poweroff(self):
         """Shutdowns the server"""

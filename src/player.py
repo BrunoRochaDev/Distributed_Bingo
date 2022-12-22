@@ -33,7 +33,7 @@ class Player:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((socket.gethostname(), self.PLAYING_AREA_PORT))
 
-        print('You are now connected to the playing area.')
+        print('[NET] You are now connected to the playing area.')
 
         # setups up selector for receiving messages
         self.selector = selectors.DefaultSelector()
@@ -61,8 +61,10 @@ class Player:
                 self.authenticate(sock, msg)
             elif msg.header == 'REGISTER':
                 self.register(sock, msg)
+            elif msg.header == 'PARTY':
+                print(f'[GAME] Party status: {msg.current}/{msg.maximum}')
         else:
-            print(f"Connection with the playing area is closed.")
+            print(f"[NET] Connection with the playing area is closed.")
             self.selector.unregister(sock)
             sock.close()
             self.running = False

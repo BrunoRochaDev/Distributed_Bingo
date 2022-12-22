@@ -63,6 +63,8 @@ class Player:
                 self.register(sock, msg)
             elif msg.header == 'PARTY':
                 print(f'[GAME] Party status: {msg.current}/{msg.maximum}')
+                if msg.current == msg.maximum:
+                    print('[GAME] Game starting...')
         else:
             print(f"[NET] Connection with the playing area is closed.")
             self.selector.unregister(sock)

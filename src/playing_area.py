@@ -21,12 +21,16 @@ class PlayingArea:
     # length of the challenge string for authentication
     CHALLENGE_LENGTH = 14
 
+    # public keys that can be callers
+    VALID_CALLERS = set([])
+
     def __init__(self, card_size : int, deck_size : int):
         self.card_size = card_size
         self.deck_size = deck_size
 
         self.playing = False # the game has not started
 
+        self.caller = None # tuple of socket, userdata ; data is associated with the socket so that when an user disconnects, we clear the data
         self.players = {} # key is socket, value is userdata ; data is associated with the socket so that when an user disconnects, we clear the data
         self.authorized_keys = {} # set for authorized public keys ; data is associated with the socket so that when an user disconnects, we clear the data
         self.challenges= {} # dict for assoaciating public key to the challenge for users not yet authenticated
@@ -197,10 +201,22 @@ class PlayingArea:
             print(f'[REG] ...signature forged. Request denied.')
             return
 
-        # at this point, user is registered
-        print(f'[REG] ...User "{msg.nickname}" with public key "{msg.playing_key}" registered.')
-        player_data = UserData(sequence = len(self.players) + 1, nickname = msg.nickname, public_key = msg.playing_key)
-        self.players[sock] = player_data # player data is associated with socket so that when a player disconnects, we clear the player data
+        # is the user a caller...
+        if msg.auth_key in self.VALID_CALLERS:
+            # there can only be one caller
+            if self.caller:
+                print(f'[REG] ...users wants to be a caller but there\'s already one. Request denied.')
+                Proto.send_msg(sock, msg)
+                return
+
+            print(f'[REG] ...Caller "{msg.nickname}" with public key "{msg.playing_key}" registered.')
+            caller_data = UserData(sequence = 0, nickname = msg.nickname, public_key = msg.playing_key)
+            self.caller = (sock, caller_data)
+        # ... or a player
+        else:
+            print(f'[REG] ...Player "{msg.nickname}" with public key "{msg.playing_key}" registered.')
+            player_data = UserData(sequence = len(self.players) + 1, nickname = msg.nickname, public_key = msg.playing_key)
+            self.players[sock] = player_data # player data is associated with socket so that when a player disconnects, we clear the player data
 
         # inform that registration was successful
         msg.success = True
@@ -212,6 +228,10 @@ class PlayingArea:
     def party_changed(self):
         player_count = len(self.players)
         print(f'[GAME] Party status: {player_count}/{self.PARTY_MAX}')
+
+        # start game if party is full
+        if player_count == self.PARTY_MAX:
+            print('[GAME] Game starting...')
 
         # notifies players
         if player_count > 0:

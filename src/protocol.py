@@ -19,7 +19,7 @@ class Authenticate(Message):
         self.success = success
 
     @classmethod
-    def parse(cls, j : str):
+    def parse(cls, j : dict):
         return Authenticate(j['public_key'], j['challenge'], j['response'], j['success'])
 
 class Register(Message):
@@ -33,7 +33,7 @@ class Register(Message):
         self.success = success
 
     @classmethod
-    def parse(cls, j : str):
+    def parse(cls, j : dict):
         return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'])
 
 class PartyUpdate(Message):
@@ -44,8 +44,18 @@ class PartyUpdate(Message):
         self.maximum = maximum
 
     @classmethod
-    def parse(cls, j : str):
+    def parse(cls, j : dict):
         return PartyUpdate(j['current'], j['maximum'])
+
+class GameOver(Message):
+    """Message for when the game is over / aborted """
+    def __init__(self, status : str):
+        self.header = "GAMEOVER"
+        self.status = status
+
+    @classmethod
+    def parse(cls, j : dict):
+        return GameOver(j['status'])
 
 class Proto:
 

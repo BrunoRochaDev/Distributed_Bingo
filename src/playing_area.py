@@ -16,7 +16,7 @@ class PlayingArea:
     PORT = 1024
 
     # the number of players needed for a game to start
-    PARTY_MAX = 3
+    PARTY_MAX = 1
 
     # length of the challenge string for authentication
     CHALLENGE_LENGTH = 14
@@ -28,6 +28,7 @@ class PlayingArea:
         self.card_size = card_size
         self.deck_size = deck_size
 
+        self.running = True
         self.playing = False # the game has not started
 
         self.caller = None # tuple of socket, userdata ; data is associated with the socket so that when an user disconnects, we clear the data
@@ -64,7 +65,7 @@ class PlayingArea:
 
         # waits for messages
         try:
-            while True:
+            while self.running:
                 events = self.selector.select()
 
                 # loops through every event in the selector...
@@ -103,14 +104,28 @@ class PlayingArea:
                 self.register(sock, msg)
         else:
             print(f"[NET] Connection with a user has been lost.")
-            # remove data associated with the socket
-            if self.caller and self.caller[0] == sock:
-                self.caller = None
-            if sock in self.authorized_keys.keys():
-                self.authorized_keys.pop(sock)
-            if sock in self.players.keys():
-                self.players.pop(sock)
-                self.party_changed() # trigger party changed event since someone left
+
+            # if a user disconnected midgame, abort it
+            if self.playing:
+                print('[GAME] Aborting game since we lost a player.')
+                print('[GAME] Notifying players that the game has been aborted...')
+                for sock in self.players.keys():
+                    Proto.send_msg(sock, GameOver('player_left'))
+                if self.caller:
+                    Proto.send_msg(self.caller[0], GameOver('player_left'))
+                # stop
+                self.running = False
+
+            # if not, no biggie
+            else:
+                # remove data associated with the socket
+                if self.caller and self.caller[0] == sock:
+                    self.caller = None
+                if sock in self.authorized_keys.keys():
+                    self.authorized_keys.pop(sock)
+                if sock in self.players.keys():
+                    self.players.pop(sock)
+                    self.party_changed() # trigger party changed event since someone left
 
             self.selector.unregister(sock)
             sock.close()
@@ -233,13 +248,19 @@ class PlayingArea:
 
         # start game if party is full
         if player_count == self.PARTY_MAX:
-            print('[GAME] Game starting...')
+            self.start_game()
 
         # notifies players
         if player_count > 0:
             print('[GAME] Notifying players on party status...')
             for sock in self.players.keys():
                 Proto.send_msg(sock, PartyUpdate(player_count, self.PARTY_MAX))
+            if self.caller:
+                Proto.send_msg(self.caller[0], PartyUpdate(player_count, self.PARTY_MAX))
+
+    def start_game(self):
+        print('[GAME] Game starting...')
+        self.playing = True
 
     def poweroff(self):
         """Shutdowns the server"""

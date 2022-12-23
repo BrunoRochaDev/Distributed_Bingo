@@ -1,4 +1,4 @@
-from src.common import UserData
+from src.common import UserData, LogEntry
 import socket # websockets
 import sys # for closing the app
 import selectors # for multiplexing
@@ -33,8 +33,11 @@ class PlayingArea:
 
         self.caller = None # tuple of socket, userdata ; data is associated with the socket so that when an user disconnects, we clear the data
         self.players = {} # key is socket, value is userdata ; data is associated with the socket so that when an user disconnects, we clear the data
-        self.authorized_keys = {} # set for authorized public keys ; data is associated with the socket so that when an user disconnects, we clear the data
-        self.challenges= {} # dict for assoaciating public key to the challenge for users not yet authenticated
+        self.authorized_keys = {} # key is socket, value is a public key ; data is associated with the socket so that when an user disconnects, we clear the data
+        self.challenges = {} # dict for associating public key to the challenge for users not yet authenticated
+
+        # Log for every command given to the playing area
+        self.log = [LogEntry.genesis_block()]
 
         # creates and starts the server
         self.server_setup()
@@ -103,6 +106,12 @@ class PlayingArea:
                 self.register(sock, msg)
             elif msg.header == 'GETUSERS':
                 self.get_user_list(sock, msg)
+            elif msg.header == 'GETLOG':
+                self.get_audit_log(sock, msg)
+
+            # log the message
+            if msg.should_log():
+                self.log_message(msg)
         else:
             print(f"[NET] Connection with a user has been lost.")
 
@@ -130,6 +139,25 @@ class PlayingArea:
 
             self.selector.unregister(sock)
             sock.close()
+
+    def log_message(self, msg : Message):
+
+        sequence = 0 # TODO
+
+        timestamp = 'now' # TODO
+
+        last_entry = self.log[-1]
+        last_hash = last_entry.hash()
+
+        text = str(msg) # the text for now will be the message as a json
+
+        # creates the log entry from the message
+        entry = LogEntry(sequence, timestamp, last_hash, text)
+
+        # TODO : playing area should sign this
+        entry.sign('private_key')
+
+        self.log.append(entry)
 
     def authenticate(self, sock : socket, msg : Authenticate):
         """Challenge-response authentication for Portuguese citzens"""
@@ -243,10 +271,18 @@ class PlayingArea:
         # trigger party changed event since someone joined
         self.party_changed()
 
+    def get_audit_log(self, sock : socket, msg : GetLog):
+        """Returns to the user the list of logged messages"""
+
+        print('[SEC] Received request to audit the message log. Sending the list...')
+
+        msg.response = self.log
+        Proto.send_msg(sock, msg)
+
     def get_user_list(self, sock : socket, msg : GetUsers):
         """Returns to the user the list of connected users"""
 
-        print('[MISC] Received request to see registed users. Sending the list...')
+        print('[SEC] Received request to see registed users. Sending the list...')
 
         # add the players
         res = list(self.players.values())
@@ -257,6 +293,7 @@ class PlayingArea:
 
         msg.response = res
         Proto.send_msg(sock, msg)
+
 
     def party_changed(self):
         player_count = len(self.players)

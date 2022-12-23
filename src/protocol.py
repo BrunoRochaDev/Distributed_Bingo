@@ -6,6 +6,9 @@ class Message:
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=False)
 
+    def should_log(self) -> bool:
+        return True
+
     def __str__(self):
         return self.to_json()
 
@@ -44,9 +47,28 @@ class GetUsers(Message):
         self.signature = signature
         self.response = response
 
+    def should_log(self) -> bool:
+        return False
+
     @classmethod
     def parse(cls, j : dict):
         return GetUsers(j['public_key'], j['signature'], j['response'])
+
+class GetLog(Message):
+    """Message for getting a list of logged messages"""
+    def __init__(self, public_key : str, signature : str, response : list = None):
+        self.header = 'GETLOG'
+        self.public_key = public_key
+        self.signature = signature
+        self.response = response
+
+    def should_log(self) -> bool:
+        return False
+
+    @classmethod
+    def parse(cls, j : dict):
+        return GetLog(j['public_key'], j['signature'], j['response'])
+
 
 class PartyUpdate(Message):
     """Message for updating registered users on how big the party is"""
@@ -54,6 +76,9 @@ class PartyUpdate(Message):
         self.header = "PARTY"
         self.current = current
         self.maximum = maximum
+
+    def should_log(self) -> bool:
+        return False
 
     @classmethod
     def parse(cls, j : dict):
@@ -64,6 +89,9 @@ class GameOver(Message):
     def __init__(self, status : str):
         self.header = "GAMEOVER"
         self.status = status
+
+    def should_log(self) -> bool:
+        return False
 
     @classmethod
     def parse(cls, j : dict):
@@ -120,6 +148,8 @@ class Proto:
             return Register.parse(j)
         elif j['header'] == 'GETUSERS':
             return GetUsers.parse(j)
+        elif j['header'] == 'GETLOG':
+            return GetLog.parse(j)
         elif j['header'] == 'PARTY':
             return PartyUpdate.parse(j)
         else:

@@ -62,7 +62,9 @@ class Player:
             elif msg.header == 'REGISTER':
                 self.register(sock, msg)
             elif msg.header == 'GETUSERS':
-                print(f'[MISC] Registered users: {msg.response}')
+                print(f'[SEC] Registered users: {msg.response}')
+            elif msg.header == 'GETLOG':
+                print(f'[SEC] Logged messages: {msg.response}')
             elif msg.header == 'PARTY':
                 print(f'[GAME] Party status: {msg.current}/{msg.maximum}')
                 if msg.current == msg.maximum:
@@ -84,6 +86,7 @@ class Player:
                 print('[AUTH] You have passed the challenge and are authenticated.')
                 print('- To register yourself, type "REGISTER"')
                 print('- Authenticated users can see registed users. type "GETUSERS".')
+                print('- Authenticated users can audit the message log. type "GETLOG".')
                 self.authenticated = True
                 return
 
@@ -115,8 +118,11 @@ class Player:
             print('[AUTH] Asking the playing area for a challenge...')
             Proto.send_msg(self.sock, Authenticate('CC_public'))
         elif text == 'GETUSERS' and self.authenticated:
-            print('[MISC] Asking the playing area for the list of registed users...')
+            print('[SEC] Asking the playing area for the list of registed users...')
             Proto.send_msg(self.sock, GetUsers("CC_public", "signature"))
+        elif text == 'GETLOG' and self.authenticated:
+            print('[SEC] Asking the playing area for the list of logged messages...')
+            Proto.send_msg(self.sock, GetLog("CC_public", "signature"))
         elif text == 'REGISTER' and not self.registered and self.authenticated:
             print(f'[REG] Registering yourself to the playing area as "{self.nickname}"...')
             Proto.send_msg(self.sock, Register(self.nickname, "playing_key", "CC_public", "signature"))

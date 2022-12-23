@@ -156,7 +156,7 @@ class Proto:
             raise ProtoBadFormat(msg_str)
 
 class ProtoBadFormat(Exception):
-    """Exception when source message is not CDProto."""
+    """Exception when source message is not Proto."""
 
     def __init__(self, original_msg: str=None) :
         """Store original message that triggered exception."""

@@ -108,6 +108,8 @@ class PlayingArea:
                 self.get_user_list(sock, msg)
             elif msg.header == 'GETLOG':
                 self.get_audit_log(sock, msg)
+            elif msg.header == 'GENCARD':
+                self.gen_card(sock, msg)
 
             # log the message
             if msg.should_log():
@@ -294,26 +296,39 @@ class PlayingArea:
         msg.response = res
         Proto.send_msg(sock, msg)
 
-
     def party_changed(self):
         player_count = len(self.players)
         print(f'[GAME] Party status: {player_count}/{self.PARTY_MAX} ({"(Caller present)" if self.caller else "Caller absent"})')
-
-        # start game if party is full and there's a caller
-        if player_count == self.PARTY_MAX and self.caller:
-            self.start_game()
 
         # notifies players
         if player_count > 0:
             print('[GAME] Notifying players on party status...')
             for sock in self.players.keys():
                 Proto.send_msg(sock, PartyUpdate(player_count, self.PARTY_MAX, self.caller != None))
+
             if self.caller:
                 Proto.send_msg(self.caller[0], PartyUpdate(player_count, self.PARTY_MAX, True))
+
+        # start game if party is full and there's a caller
+        if player_count == self.PARTY_MAX and self.caller:
+            self.start_game()
 
     def start_game(self):
         print('[GAME] Game starting...')
         self.playing = True
+
+        # ask for the caller to generate the deck
+        print('[GAME] Asking Caller to generate the deck...')
+        Proto.send_msg(self.caller[0], GenerateDeck(self.deck_size))
+
+    def gen_card(self, sock : socket, msg : GenerateCard):
+        def find_user_by_sequence(sequence : id):
+            for player in self.players.values():
+                if player.sequence == sequence:
+                    return player
+            return None
+
+        print(msg)
 
     def poweroff(self):
         """Shutdowns the server"""

@@ -1,4 +1,5 @@
 from src.user import *
+import random
 
 class Player(User):
 
@@ -26,3 +27,15 @@ class Player(User):
             Proto.send_msg(self.sock, Register(self.nickname, self.playing_key, self.CC_public, "signature"))
         else:
             print('Invalid input.')
+
+    def generate_card(self, sock : socket, msg : GenerateCard):
+        """Generate the card for this player"""
+        print('[GAME] Generating card...')
+        self.card = set() # card is a set of M numbers ranging from 0 to N
+
+        # get M random numbers from 0 to N
+        deck = [n for n in range(msg.deck_size)]
+        random.shuffle(deck)
+        for m in range(msg.card_size):
+            self.card.add(deck[m])
+        print(f'[GAME] Card generated : {self.card}')

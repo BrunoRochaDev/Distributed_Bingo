@@ -1,5 +1,6 @@
 import json # for serializing
 import socket # websockets
+from src.crypto import Crypto # cryptography
 
 class Message:
     """Generic message"""
@@ -69,7 +70,6 @@ class GetLog(Message):
     def parse(cls, j : dict):
         return GetLog(j['public_key'], j['signature'], j['response'])
 
-
 class PartyUpdate(Message):
     """Message for updating registered users on how big the party is"""
     def __init__(self, current : int, maximum : int, caller : bool):
@@ -84,6 +84,33 @@ class PartyUpdate(Message):
     @classmethod
     def parse(cls, j : dict):
         return PartyUpdate(j['current'], j['maximum'], j['caller'])
+
+class GenerateDeck(Message):
+    """Message telling the caller to generate the deck and initiate the card generation proccess"""
+    def __init__(self, deck_size : int):
+        self.header = "GENDECK"
+        self.deck_size = deck_size
+
+    @classmethod
+    def parse(cls, j : dict):
+        return GenerateDeck(j['deck_size'])
+
+class GenerateCard(Message):
+    """Players will pass this message around until everyone has commited their card"""
+    def __init__(self, sequence : int, deck : list ,signatures : list = []):
+        self.header = "GENCARD"
+        self.sequence = sequence
+        self.deck = deck
+        self.signatures = signatures
+
+    def sign(self, private_key : str) -> str:
+        # TODO Sign with private key
+        #return Crypto.sign_ECC(private_key, )
+        return "signature"
+
+    @classmethod
+    def parse(cls, j : dict):
+        return GenerateCard(j['sequence'], j['deck'], j['signatures'])
 
 class GameOver(Message):
     """Message for when the game is over / aborted """
@@ -153,6 +180,12 @@ class Proto:
             return GetLog.parse(j)
         elif j['header'] == 'PARTY':
             return PartyUpdate.parse(j)
+        elif j['header'] == 'GENDECK':
+            return GenerateDeck.parse(j)
+        elif j['header'] == 'GENCARD':
+            return GenerateCard.parse(j)
+        elif j['header'] == 'GAMEOVER':
+            return GameOver.parse(j)
         else:
             raise ProtoBadFormat(msg_str)
 

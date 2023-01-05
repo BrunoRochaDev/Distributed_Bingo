@@ -69,6 +69,10 @@ class User:
                 print(f'[GAME] Party status: {msg.current}/{msg.maximum} ({"Caller present" if msg.caller else "Caller absent"})')
                 if msg.caller and msg.current == msg.maximum:
                     print('[GAME] Game starting...')
+            elif msg.header == 'GENDECK':
+                self.generate_deck(sock, msg)
+            elif msg.header == 'GENCARD':
+                self.generate_card(sock, msg)
             elif msg.header == 'GAMEOVER':
                 print(f'[GAME] {msg}')
         else:
@@ -108,4 +112,7 @@ class User:
         else:
             print(f'[REG] ...registration failed. The nickname "{self.nickname}" might be already taken, try another.')
             self.running = False
-            pass
+
+    def generate_card(self, sock : socket, msg : GenerateCard):
+        """To be implemented by the class who extends this"""
+        pass

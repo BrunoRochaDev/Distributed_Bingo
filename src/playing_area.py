@@ -22,7 +22,7 @@ class PlayingArea:
     CHALLENGE_LENGTH = 14
 
     # public keys that can be callers
-    VALID_CALLERS = set([])
+    VALID_CALLERS = set(['caller_CC'])
 
     def __init__(self, card_size : int, deck_size : int):
         self.card_size = card_size
@@ -297,19 +297,19 @@ class PlayingArea:
 
     def party_changed(self):
         player_count = len(self.players)
-        print(f'[GAME] Party status: {player_count}/{self.PARTY_MAX}')
+        print(f'[GAME] Party status: {player_count}/{self.PARTY_MAX} ({"(Caller present)" if self.caller else "Caller absent"})')
 
-        # start game if party is full
-        if player_count == self.PARTY_MAX:
+        # start game if party is full and there's a caller
+        if player_count == self.PARTY_MAX and self.caller:
             self.start_game()
 
         # notifies players
         if player_count > 0:
             print('[GAME] Notifying players on party status...')
             for sock in self.players.keys():
-                Proto.send_msg(sock, PartyUpdate(player_count, self.PARTY_MAX))
+                Proto.send_msg(sock, PartyUpdate(player_count, self.PARTY_MAX, self.caller != None))
             if self.caller:
-                Proto.send_msg(self.caller[0], PartyUpdate(player_count, self.PARTY_MAX))
+                Proto.send_msg(self.caller[0], PartyUpdate(player_count, self.PARTY_MAX, True))
 
     def start_game(self):
         print('[GAME] Game starting...')

@@ -16,7 +16,6 @@ class User:
     fcntl.fcntl(sys.stdin, fcntl.F_SETFL, orig_fl | os.O_NONBLOCK)
 
     def __init__(self, nickname : str):
-        print(f'Your nickname is "{nickname}".')
         self.nickname = nickname
 
         self.authenticated = False # not authenticated at the start
@@ -67,8 +66,8 @@ class User:
             elif msg.header == 'GETLOG':
                 print(f'[SEC] Logged messages: {msg.response}')
             elif msg.header == 'PARTY':
-                print(f'[GAME] Party status: {msg.current}/{msg.maximum}')
-                if msg.current == msg.maximum:
+                print(f'[GAME] Party status: {msg.current}/{msg.maximum} ({"Caller present" if msg.caller else "Caller absent"})')
+                if msg.caller and msg.current == msg.maximum:
                     print('[GAME] Game starting...')
             elif msg.header == 'GAMEOVER':
                 print(f'[GAME] {msg}')

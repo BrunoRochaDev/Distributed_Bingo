@@ -72,17 +72,18 @@ class GetLog(Message):
 
 class PartyUpdate(Message):
     """Message for updating registered users on how big the party is"""
-    def __init__(self, current : int, maximum : int):
+    def __init__(self, current : int, maximum : int, caller : bool):
         self.header = "PARTY"
         self.current = current
         self.maximum = maximum
+        self.caller = caller
 
     def should_log(self) -> bool:
         return False
 
     @classmethod
     def parse(cls, j : dict):
-        return PartyUpdate(j['current'], j['maximum'])
+        return PartyUpdate(j['current'], j['maximum'], j['caller'])
 
 class GameOver(Message):
     """Message for when the game is over / aborted """

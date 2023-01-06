@@ -16,20 +16,20 @@ class Crypto:
         return (AESGCM.generate_key(bit_length=128), os.urandom(12))
 
     @classmethod
-    def sym_encrypt(cls, key: bytes, data, nonce: bytes=b'') -> bytes:
+    def sym_encrypt(cls, key: bytes, data, nonce: bytes=b'12345678') -> bytes:
         """Encrypts data given with given AESGCM key"""
 
-        data=bytes(data, 'utf-8')
+        data=bytes(str(data), 'utf-8')
         cypher = AESGCM(key) 
         ct = cypher.encrypt(nonce, data, None)
   
         return ct 
 
     @classmethod
-    def sym_decrypt(cls, key: bytes, crypted_data, nonce: bytes=b'') -> bytes:
+    def sym_decrypt(cls, key: bytes, crypted_data, nonce: bytes=b'12345678') -> bytes:
         """Decrypts encrypted data given with given AESGCM key"""
         
-        crypted_data=bytes(crypted_data, 'utf-8')
+        crypted_data=bytes(str(crypted_data), 'utf-8')
         cypher = AESGCM(key) 
         data = cypher.decrypt(nonce, crypted_data, None)
         
@@ -60,7 +60,7 @@ class Crypto:
     def asym_encrypt(cls, public_key, data) -> bytes:
         """Encrypts data using given public key"""
         
-        data=bytes(data, 'utf-8')
+        data=bytes(str(data), 'utf-8')
         ciphertext = public_key.encrypt(data,
             
             padding.OAEP(
@@ -76,7 +76,7 @@ class Crypto:
     def asym_decrypt(cls, private_key, crypted_data) -> bytes:
         """Encrypts data using given private key"""
         
-        crypted_data=bytes(crypted_data, 'utf-8')
+        crypted_data=bytes(str(crypted_data), 'utf-8')
         data = private_key.decrypt(crypted_data,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -91,7 +91,7 @@ class Crypto:
     def sign(cls, private_key, data) -> bytes:
         """Returns Signature of given data signed with given private key"""
           
-        data=bytes(data, 'utf-8')
+        data=bytes(str(data), 'utf-8')
         signature = private_key.sign(
             data,
             padding.PSS(

@@ -47,7 +47,7 @@ class Caller(User):
 
         # creating the card generation message
         card_msg = GenerateCard(1, encrypted_deck)
-        card_msg.signatures.append(card_msg.sign(self.deck_key))
+        card_msg.signatures.append(card_msg.sign(self.playing_key))
 
         Proto.send_msg(sock, card_msg)
 

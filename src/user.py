@@ -134,6 +134,7 @@ class User:
             return
 
         print('[GAME] Sending my deck key to other players...')
-        response = DeckKeyResponse(msg.sequence, self.deck_key)
+        # TODO deck_key must be sent in a way that the other side can reconstruct
+        response = DeckKeyResponse(msg.sequence, str(self.deck_key))
         response.sign(self.playing_key)
         Proto.send_msg(sock, response)

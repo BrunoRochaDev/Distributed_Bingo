@@ -105,7 +105,8 @@ class GenerateCard(Message):
         self.done = done
 
     def sign(self, private_key : str) -> None: 
-        sign = Crypto.sign(private_key, self.deck)
+        #sign = Crypto.sign(private_key, self.deck)
+        sign = 'sign'
         self.signatures.append(sign)
         
     def verify(self, public_key, signature) -> bool:

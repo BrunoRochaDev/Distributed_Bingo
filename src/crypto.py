@@ -8,12 +8,12 @@ class Crypto:
     """Cryptographic utilities"""
 
     @classmethod
-    def sym_gen(cls):
-        """Generates a new AESGCM key"""
+    def sym_gen(cls) -> tuple(bytes, bytes):
+        """Generates a new AESGCM (key, nonce) tuple""" 
         return (AESGCM.generate_key(bit_length=128), os.urandom(12))
 
     @classmethod
-    def sym_encrypt(cls, data, key, nonce):
+    def sym_encrypt(cls, data: bytes, key: bytes, nonce: bytes) -> bytes:
         """Encrypts data given with given AESGCM key"""
 
         cypher = AESGCM(key) 
@@ -23,7 +23,7 @@ class Crypto:
         return ct 
 
     @classmethod
-    def sym_decrypt(cls, crypted_data, key, nonce):
+    def sym_decrypt(cls, crypted_data: bytes, key: bytes, nonce: bytes) -> bytes:
         """Decrypts encrypted data given with given AESGCM key"""
         
         cypher = AESGCM(key) 
@@ -33,7 +33,7 @@ class Crypto:
         return data 
 
     @classmethod
-    def do_hash(cls, data: bytes):
+    def do_hash(cls, data: bytes) -> bytes:
         """Returns an hash of a given data"""
         
         digest = hashes.Hash(hashes.SHA256()) 
@@ -41,9 +41,9 @@ class Crypto:
         hash = digest.finalize().hex()
         
         return hash 
- 
 
  
+
 
 """ HOW TO USE: 
 

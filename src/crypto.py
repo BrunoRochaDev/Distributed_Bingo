@@ -3,12 +3,13 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding  
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import ec 
 
 class Crypto:
     """Cryptographic utilities"""
 
     @classmethod
-    def sym_gen(cls) -> tuple(bytes, bytes):
+    def sym_gen(cls) -> tuple:
         """Generates a new AESGCM (key, nonce) tuple""" 
         return (AESGCM.generate_key(bit_length=128), os.urandom(12))
 
@@ -30,7 +31,7 @@ class Crypto:
         data = cypher.decrypt(nonce, crypted_data, None)
 
         #print("\n[Decrypted] ct: " + str(crypted_data) + ", to: "+ str(data)) 
-        return data 
+        return data  
 
     @classmethod
     def do_hash(cls, data: bytes) -> bytes:
@@ -41,17 +42,3 @@ class Crypto:
         hash = digest.finalize().hex()
         
         return hash 
-
- 
-
-
-""" HOW TO USE: 
-
-msg_ = b'uwu'  
-
-(key,nonce) = Crypto.sym_gen()
-msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)
-
-print("\n")
-    
-"""

@@ -16,7 +16,7 @@ class Crypto:
         return (AESGCM.generate_key(bit_length=128), os.urandom(12))
 
     @classmethod
-    def sym_encrypt(cls, data: bytes, key: bytes, nonce: bytes) -> bytes:
+    def sym_encrypt(cls, key: bytes, data: bytes, nonce: bytes=b'') -> bytes:
         """Encrypts data given with given AESGCM key"""
 
         cypher = AESGCM(key) 
@@ -25,7 +25,7 @@ class Crypto:
         return ct 
 
     @classmethod
-    def sym_decrypt(cls, crypted_data: bytes, key: bytes, nonce: bytes) -> bytes:
+    def sym_decrypt(cls, key: bytes, crypted_data: bytes, nonce: bytes=b'') -> bytes:
         """Decrypts encrypted data given with given AESGCM key"""
         
         cypher = AESGCM(key) 

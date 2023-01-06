@@ -42,5 +42,28 @@ class SmartCardSession():
 
         return pem.armor('PUBLIC KEY', cert_der)
 
+    def getCert(self):
+        result = []
+        cert_pem = []
+        certs = self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_CERTIFICATE)])
+        for cert in certs:
+            cka_value, cka_id = self.session.getAttributeValue(cert, [PyKCS11.CKA_VALUE, PyKCS11.CKA_ID])
+            cert_der = bytes(cka_value)
+            cert = x509.Certificate.load(cert_der)
+            # Write out a PEM encoded value
+            cert_pem = pem.armor('CERTIFICATE', cert_der)
+            result.append(cert)
         
+        return cert_pem
 
+
+
+
+
+if __name__ == '__main__':
+    smart = SmartCardSession("1111") 
+
+
+
+    result = smart.getCert()
+    print(result.decode())

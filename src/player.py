@@ -1,5 +1,4 @@
 from src.user import *
-import random
 
 class Player(User):
 
@@ -33,6 +32,7 @@ class Player(User):
         if msg.done:
             print('[GAME] Received commtied deck. Waiting for deck keys to decrypt it.')
             self.encrypted_deck = msg.deck
+            self.deck_signatures = msg.signatures
             return
 
         # sequence must match
@@ -49,7 +49,7 @@ class Player(User):
         print('[GAME] Generating card...')
 
         # Shuffle the deck deterministically
-        random.Random(self.playing_key).shuffle(msg.deck)
+        msg.deck = self.deterministic_shuffle(msg.deck, str(self.deck_key))
 
         msg.sign(self.deck_key)
 

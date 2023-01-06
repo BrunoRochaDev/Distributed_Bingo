@@ -3,6 +3,7 @@ import sys # for closing the app
 import selectors # for multiplexing
 import fcntl # For non-blocking stdout
 from src.common import UserData, LogEntry
+import random # for shuffling
 import os
 
 from src.protocol import *
@@ -143,7 +144,7 @@ class User:
             # TODO disqualify?
             return
 
-        print('[GAME] Sending my deck key to other players...')
+        print('[SEC] Sending my deck key to other players...')
         # TODO deck_key must be sent in a way that the other side can reconstruct
         response = DeckKeyResponse(msg.sequence, str(self.deck_key))
         response.sign(self.playing_key)
@@ -159,12 +160,69 @@ class User:
             return
 
         self.deck_keys[msg.sequence] = msg.response
-        print(self.deck_keys)
 
         current = sum([x != None for x in self.deck_keys.values()])
         total = len(self.deck_keys)
-        print(f'[GAME] Received a deck key. ({current}/{total})')
+        print(f'[SEC] Received a deck key. ({current}/{total})')
 
         # if got every key, start to decrypt the deck
         if current == total:
-            pass
+            self.decrypt_deck()
+
+    def decrypt_deck(self):
+        def get_public_key(sequence : int) -> str:
+            return self.users[sequence].public_key
+
+        print('[SEC] Starting to decrypt the deck...')
+
+        # the deck must have been signed by the caller next
+        if False: # TODO
+            print('[ERROR] Deck was not last signed by the caller')
+            return
+
+        total = len(self.deck_keys)
+        for seq in reversed(range(total)):
+            if seq != 0: # unshuffle the deck
+                seed = self.deck_keys[seq]
+                self.encrypted_deck = self.deterministic_unshuffle(self.encrypted_deck, seed)
+
+            # check if the signature is valid
+            signature = self.deck_signatures.pop()
+            if False: # if it's invalid...
+                print("[ERROR] There's an invalid signature in the deck. Game should be aborted.")
+                # TODO abort game
+                return
+
+            # TODO decipher using deck key
+            deck_key = self.deck_keys[seq]
+
+        # now we have the decrypted, unshuffled deck
+        self.deck = self.encrypted_deck
+        print(f'[GAME] The decrypted deck is: {self.deck}')
+
+        # calculate each player card...
+        print('[GAME] The cards are as following:')
+        self.cards = {}
+        for seq in range(1,total):
+            seed = self.deck_keys[seq]
+            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)
+            print(f'{"(You)" if seq == self.sequence else self.users[seq].nickname} : {self.cards[seq]}')
+
+    # https://crypto.stackexchange.com/q/78309
+    def deterministic_shuffle(self, ls, seed : str):
+        """Deterministically shuffles a list given a seed""" 
+        random.seed(seed)
+        random.shuffle(ls)
+        return ls
+
+    # https://crypto.stackexchange.com/q/78309
+    def deterministic_unshuffle(self, shuffled_ls, seed : str):
+        n = len(shuffled_ls)
+        # perm is [1, 2, ..., n]
+        perm = [i for i in range(1, n + 1)]
+        # apply sigma to perm
+        shuffled_perm = self.deterministic_shuffle(perm, seed)
+        # zip and unshuffle
+        zipped_ls = list(zip(shuffled_ls, shuffled_perm))
+        zipped_ls.sort(key=lambda x: x[1])
+        return [a for (a, b) in zipped_ls]

@@ -39,8 +39,8 @@ class Caller(User):
         random.shuffle(self.deck)
 
         # encrypt each number with the sym key
-        encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
-        encrypted_deck = [1, 2, 3]
+        encrypted_deck = self.deck
+        #encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
 
         print(f'[GAME] Deck generated : {self.deck}')
         self.signed_deck = True
@@ -56,6 +56,8 @@ class Caller(User):
         print('[GAME] Received deck after all players made their cards. Validating it...')
 
         self.encrypted_deck = msg.deck
+        self.deck_signatures = msg.signatures
+
         msg.sign(self.deck_key)
         msg.done = True
 

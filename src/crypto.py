@@ -2,6 +2,7 @@ import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding  
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives import hashes
 
 class Crypto:
     """Cryptographic utilities"""
@@ -31,10 +32,18 @@ class Crypto:
         #print("\n[Decrypted] ct: " + str(crypted_data) + ", to: "+ str(data)) 
         return data 
 
+    @classmethod
+    def do_hash(cls, data: bytes):
+        """Returns an hash of a given data"""
+        
+        digest = hashes.Hash(hashes.SHA256()) 
+        digest.update(data)    
+        hash = digest.finalize().hex()
+        
+        return hash 
+ 
 
-
-
-
+ 
 
 """ HOW TO USE: 
 

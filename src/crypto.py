@@ -42,3 +42,15 @@ class Crypto:
         hash = digest.finalize().hex()
         
         return hash 
+
+    @classmethod
+    def asym_gen(cls) -> tuple:
+        """Generates a new Asymetric key pair"""
+        
+        private_key = ec.generate_private_key(
+            ec.SECP384R1()
+        )
+        
+        return (private_key, private_key.public_key())
+
+ 

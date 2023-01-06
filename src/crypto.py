@@ -57,10 +57,10 @@ class Crypto:
         return (private_key, private_key.public_key())
 
     @classmethod
-    def asym_encrypt(cls, key, data: bytes) -> bytes:
+    def asym_encrypt(cls, public_key, data: bytes) -> bytes:
         """Encrypts data using given key"""
         
-        ciphertext = key.encrypt(data,
+        ciphertext = public_key.encrypt(data,
             
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -72,10 +72,10 @@ class Crypto:
         return ciphertext
 
     @classmethod
-    def asym_decrypt(cls, key, crypted_data: bytes) -> bytes:
+    def asym_decrypt(cls, private_key, crypted_data: bytes) -> bytes:
         """Encrypts data using given key"""
         
-        data = key.decrypt(crypted_data,
+        data = private_key.decrypt(crypted_data,
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
@@ -84,6 +84,23 @@ class Crypto:
         )
 
         return data
+
+    @classmethod
+    def sign(cls, private_key, data: bytes) -> bytes:
+        """Encrypts data using given key"""
+          
+        signature = private_key.sign(
+            data,
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256()
+        )
+
+        return signature
+
+
 
 
 
@@ -106,7 +123,7 @@ msg_ = b'uwu'
 print(priv_k)
 print(publ_k)
 crypted_data = Crypto.asym_encrypt(publ_k, msg_)
-print(Crypto.asym_decrypt(priv_k, crypted_data))
+print(Crypto.sign(priv_k, msg_))
 
 """
         msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)

@@ -28,17 +28,18 @@ class Authenticate(Message):
 
 class Register(Message):
     """Message for players registering themselves to the playing area"""
-    def __init__(self, nickname : str, playing_key : str, auth_key : str, signature : str, success : bool = False):
+    def __init__(self, nickname : str, playing_key : str, auth_key : str, signature : str, success : bool = False, sequence : int = None):
         self.header = 'REGISTER'
         self.nickname = nickname
         self.playing_key = playing_key
         self.auth_key = auth_key
         self.signature = signature
         self.success = success
+        self.sequence = sequence
 
     @classmethod
     def parse(cls, j : dict):
-        return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'])
+        return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'], j['sequence'])
 
 class GetUsers(Message):
     """Message for getting a list of registered users"""

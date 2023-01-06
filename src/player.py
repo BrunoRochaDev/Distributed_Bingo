@@ -35,6 +35,12 @@ class Player(User):
             self.encrypted_deck = msg.deck
             return
 
+        # sequence must match
+        if msg.sequence != self.sequence:
+            print('[ERROR] Sequence from the card does not match your own.')
+            # TODO tell caller
+            return
+
         # message must have deck
         if not msg.deck:
             print('[ERROR] Generate card message does not contain a deck')
@@ -54,4 +60,4 @@ class Player(User):
 
         # Create dict to hold everyone's deck keys
         self.deck_keys = {key:None for key in self.users.keys()}
-        self.deck_keys[msg.sequence] = self.deck_key
+        self.deck_keys[self.sequence] = str(self.deck_key)

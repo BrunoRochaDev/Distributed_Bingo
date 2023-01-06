@@ -278,6 +278,7 @@ class PlayingArea:
 
         # inform that registration was successful
         msg.success = True
+        msg.sequence = len(self.players)
         Proto.send_msg(sock, msg)
 
         # trigger party changed event since someone joined

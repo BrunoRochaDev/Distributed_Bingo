@@ -18,6 +18,7 @@ class User:
 
     def __init__(self, nickname : str):
         self.nickname = nickname
+        self.sequence = None # given by the playing area
         self.users = {} # userdata of all players
         self.log = [] # message logs as received from
 
@@ -119,7 +120,8 @@ class User:
         # if the registration was a success
         if msg.success:
             self.registred = True
-            print('[REG] ...registration was a success.')
+            self.sequence = msg.sequence
+            print(f'[REG] ...registration was a success. I am the user of sequence {self.sequence}.')
         # was not a success
         else:
             print(f'[REG] ...registration failed. The nickname "{self.nickname}" might be already taken, try another.')

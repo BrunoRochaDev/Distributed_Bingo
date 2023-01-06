@@ -21,8 +21,7 @@ class Crypto:
 
         cypher = AESGCM(key) 
         ct = cypher.encrypt(nonce, data, None)
-
-        #print("\n[Encypted] msg: " + str(data) + ", to: "+ str(ct)) 
+  
         return ct 
 
     @classmethod
@@ -31,8 +30,7 @@ class Crypto:
         
         cypher = AESGCM(key) 
         data = cypher.decrypt(nonce, crypted_data, None)
-
-        #print("\n[Decrypted] ct: " + str(crypted_data) + ", to: "+ str(data)) 
+        
         return data  
 
     @classmethod
@@ -53,13 +51,12 @@ class Crypto:
             public_exponent=65537,
             key_size=2048,
         )
-
         
         return (private_key, private_key.public_key())
 
     @classmethod
     def asym_encrypt(cls, public_key, data: bytes) -> bytes:
-        """Encrypts data using given key"""
+        """Encrypts data using given public key"""
         
         ciphertext = public_key.encrypt(data,
             
@@ -74,7 +71,7 @@ class Crypto:
 
     @classmethod
     def asym_decrypt(cls, private_key, crypted_data: bytes) -> bytes:
-        """Encrypts data using given key"""
+        """Encrypts data using given private key"""
         
         data = private_key.decrypt(crypted_data,
             padding.OAEP(
@@ -88,7 +85,7 @@ class Crypto:
 
     @classmethod
     def sign(cls, private_key, data: bytes) -> bytes:
-        """Encrypts data using given key"""
+        """Returns Signature of given data signed with given private key"""
           
         signature = private_key.sign(
             data,
@@ -103,7 +100,7 @@ class Crypto:
 
     @classmethod
     def verify(cls, public_key, message: bytes, signature: bytes) -> bool:
-        """Encrypts data using given key"""
+        """Verifies if given message matches with given signature"""
           
         try:  
             public_key.verify(

@@ -104,10 +104,12 @@ class GenerateCard(Message):
         self.signatures = signatures
         self.done = done
 
-    def sign(self, private_key : str) -> None:
-        # TODO Sign with private key
-        #return Crypto.sign_ECC(private_key, )
-        self.signatures.append("signature")
+    def sign(self, private_key : str) -> None: 
+        sign = Crypto.sign(private_key, self.deck)
+        self.signatures.append(sign)
+        
+    def verify(self, public_key, signature) -> bool:
+        return Crypto.verify(public_key, self.deck, signature)
 
     @classmethod
     def parse(cls, j : dict):

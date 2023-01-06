@@ -21,7 +21,7 @@ class User:
         self.users = {} # userdata of all players
         self.log = [] # message logs as received from
 
-        self.deck_key = 'deck_key' # TODO sym key, AES128
+        self.deck_key = Crypto.sym_gen()[0] # sym key, AES128
         self.encrypted_deck = None
 
         self.authenticated = False # not authenticated at the start

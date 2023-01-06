@@ -39,7 +39,7 @@ class Caller(User):
         random.shuffle(self.deck)
 
         # encrypt each number with the sym key
-        #encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
+        encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
         encrypted_deck = [1, 2, 3]
 
         print(f'[GAME] Deck generated : {self.deck}')

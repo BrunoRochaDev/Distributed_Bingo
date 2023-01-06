@@ -86,6 +86,8 @@ class User:
                 self.generate_card(sock, msg)
             elif msg.header == 'DECKKEYREQ':
                 self.deck_key_request(sock, msg)
+            elif msg.header == 'DECKKEYRES':
+                self.deck_key_response(sock, msg)
             elif msg.header == 'GAMEOVER':
                 print(f'[GAME] {msg}')
         else:
@@ -135,8 +137,34 @@ class User:
             # TODO disqualify game?
             return
 
+        # sequence must mach
+        if msg.sequence != self.sequence:
+            print("[ERROR] Deck key request received has incorrect sequence")
+            # TODO disqualify?
+            return
+
         print('[GAME] Sending my deck key to other players...')
         # TODO deck_key must be sent in a way that the other side can reconstruct
         response = DeckKeyResponse(msg.sequence, str(self.deck_key))
         response.sign(self.playing_key)
         Proto.send_msg(sock, response)
+
+    def deck_key_response(self, sock : socket, msg : DeckKeyResponse):
+        """Verifies and stores deck key response"""
+
+        # TODO verify signature
+        if False:
+            print('[ERROR] Received a deck key response with invalid signature.')
+            # TODO notify caller
+            return
+
+        self.deck_keys[msg.sequence] = msg.response
+        print(self.deck_keys)
+
+        current = sum([x != None for x in self.deck_keys.values()])
+        total = len(self.deck_keys)
+        print(f'[GAME] Received a deck key. ({current}/{total})')
+
+        # if got every key, start to decrypt the deck
+        if current == total:
+            pass

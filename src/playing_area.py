@@ -120,6 +120,8 @@ class PlayingArea:
                 self.get_audit_log(sock, msg)
             elif msg.header == 'GENCARD':
                 self.gen_card(sock, msg)
+            elif msg.header == 'DECKKEYRES':
+                self.deck_key_response(sock, msg)
 
             # log the message
             if msg.should_log():
@@ -270,15 +272,16 @@ class PlayingArea:
             print(f'[REG] ...Caller "{msg.nickname}" with public key "{msg.playing_key}" registered.')
             caller_data = UserData(0, msg.nickname, msg.playing_key)
             self.caller = (sock, caller_data)
+            msg.sequence = 0
         # ... or a player
         else:
             print(f'[REG] ...Player "{msg.nickname}" with public key "{msg.playing_key}" registered.')
             player_data = UserData(len(self.players) + 1, msg.nickname, msg.playing_key)
             self.players[sock] = player_data # player data is associated with socket so that when a player disconnects, we clear the player data
+            msg.sequence = len(self.players)
 
         # inform that registration was successful
         msg.success = True
-        msg.sequence = len(self.players)
         Proto.send_msg(sock, msg)
 
         # trigger party changed event since someone joined
@@ -368,6 +371,15 @@ class PlayingArea:
 
         print(f'[NET] Forwarding deck to {next_player.nickname}... ({msg.sequence}/{len(self.players) + 1})')
         Proto.send_msg(next_socket, msg)
+
+    def deck_key_response(self, sock : socket, msg : DeckKeyResponse):
+        """Verifies and distribute deck keys to all users"""
+
+        print('[NET] Forwarding deck key around...')
+        for _sock in [i for i in self.players.keys()] + [self.caller[0]]:
+            if _sock == sock: # don't need to send it back
+                continue
+            Proto.send_msg(_sock, msg) 
 
     def poweroff(self):
         """Shutdowns the server"""

@@ -88,8 +88,14 @@ class PlayingArea:
         """Accepts the connection from a client (player)"""
 
         connection, address = sock.accept()
-        print(f"[NET] Accepted connection from {address}.")
 
+        # only accepts connection if game has not yet started
+        if self.playing:
+            print(f"[NET] Refused a connection because the game has already begun.")
+            connection.close()
+            return
+
+        print(f"[NET] Accepted connection from {address}.")
         self.selector.register(connection, selectors.EVENT_READ, data="")
 
     def service_connection(self, key):

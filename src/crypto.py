@@ -1,9 +1,10 @@
 import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding  
+from cryptography.hazmat.primitives.asymmetric import padding   
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 class Crypto:
     """Cryptographic utilities"""
@@ -49,7 +50,7 @@ class Crypto:
         
         private_key = rsa.generate_private_key(
             public_exponent=65537,
-            key_size=4096,
+            key_size=2048,
         )
 
         
@@ -59,8 +60,16 @@ class Crypto:
     def asym_encrypt(cls, key, data: bytes) -> bytes:
         """Encrypts data using given key"""
         
-        
-        pass
+        ciphertext = key.encrypt(data,
+            
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+                )
+        )
+
+        return ciphertext
 
 
 
@@ -83,6 +92,7 @@ msg_ = b'uwu'
 (priv_k, publ_k) = Crypto.asym_gen()
 print(priv_k)
 print(publ_k)
+print(Crypto.asym_encrypt(publ_k, msg_))
 
 """
         msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)

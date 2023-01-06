@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from cryptography.exceptions import InvalidSignature
 
 class Crypto:
     """Cryptographic utilities"""
@@ -100,34 +101,24 @@ class Crypto:
 
         return signature
 
+    @classmethod
+    def verify(cls, public_key, message: bytes, signature: bytes) -> bool:
+        """Encrypts data using given key"""
+          
+        try:  
+            public_key.verify(
+                signature,
+                message,
+                padding.PSS(
+                    mgf=padding.MGF1(hashes.SHA256()),
+                    salt_length=padding.PSS.MAX_LENGTH
+                ),
+                hashes.SHA256()
+            ) 
+        except InvalidSignature:
+            return False
+        except:
+            print("Unidentified Error")
+            return False
 
-
-
-
-""" HOW TO USE:
-
-    Symetric:
-
-        msg_ = b'uwu'  
-
-        (key,nonce) = Crypto.sym_gen()
-        msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)
-
-        print("\n")
-
-    Asymetric:
-"""
-msg_ = b'uwu'  
-
-(priv_k, publ_k) = Crypto.asym_gen()
-print(priv_k)
-print(publ_k)
-crypted_data = Crypto.asym_encrypt(publ_k, msg_)
-print(Crypto.sign(priv_k, msg_))
-
-"""
-        msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)
-
-        print("\n")
-    
-"""
+        return True

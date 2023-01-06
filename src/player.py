@@ -7,7 +7,6 @@ class Player(User):
         print(f'You are a PLAYER. Your nickname is "{nickname}".')
         self.CC_public = nickname+'_CC'
         self.playing_key = nickname+'_playing_key' 
-        self.deck_key = 'dec'
         super().__init__(nickname)
 
     def handle_input(self, stdin):
@@ -31,12 +30,22 @@ class Player(User):
 
     def generate_card(self, sock : socket, msg : GenerateCard):
         """Generate the card for this player"""
+        if msg.done:
+            print('[GAME] Received commtied deck. Waiting for deck keys to decrypt it.')
+            self.encrypted_deck = msg.deck
+            return
+
+        # message must have deck
+        if not msg.deck:
+            print('[ERROR] Generate card message does not contain a deck')
+            return
+
         print('[GAME] Generating card...')
 
         # Shuffle the deck deterministically
-        random.Random(self.playing_key).shuffle(msg.deck)
+        #random.Random(self.playing_key).shuffle(msg.deck)
 
-        msg.signatures.append(msg.sign(self.deck_key))
+        msg.sign(self.deck_key)
 
         msg.sequence += 1
 

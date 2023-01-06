@@ -297,7 +297,7 @@ class PlayingArea:
 
         # add the caller if exists
         if self.caller:
-            res.append(caller[1])
+            res.append(self.caller[1])
 
         msg.response = res
         Proto.send_msg(sock, msg)
@@ -334,6 +334,19 @@ class PlayingArea:
                 if player.sequence == sequence:
                     return socket, player
             return None, None
+
+        # if the card generation has made all the way back to the caller...
+        if msg.done:
+            # ... distribute it to every player
+            for _sock in self.players.keys():
+                Proto.send_msg(_sock, msg)
+
+            # and ask for the deck key
+            Proto.send_msg(self.caller[0], DeckKeyRequest(0))
+            for seq in range(1,len(self.players)+1):
+                _sock, _ = find_user_by_sequence(seq)
+                Proto.send_msg(_sock, DeckKeyRequest(seq))
+            return
 
         next_socket, next_player = find_user_by_sequence(msg.sequence)
 

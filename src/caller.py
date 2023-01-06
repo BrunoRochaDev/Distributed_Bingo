@@ -8,7 +8,6 @@ class Caller(User):
         print(f'You are a CALLER. Your nickname is "{nickname}".')
         self.CC_public = 'caller_CC'
         self.playing_key = nickname+'_playing_key' # TODO asym key pair, ECC
-        self.deck_key = 'deck_key' # TODO sym key, AES128
 
         self.signed_deck = False
 
@@ -41,7 +40,7 @@ class Caller(User):
 
         # encrypt each number with the sym key
         #encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
-        encrypted_deck = []
+        encrypted_deck = [1, 2, 3]
 
         print(f'[GAME] Deck generated : {self.deck}')
         self.signed_deck = True
@@ -56,10 +55,10 @@ class Caller(User):
         """The deck made all the way back after all players generated their cards"""
         print('[GAME] Received deck after all players made their cards. Validating it...')
 
-        # Shuffle the deck deterministically
-        random.Random(self.playing_key).shuffle(msg.deck)
-
-        msg.signatures.append(msg.sign(self.deck_key))
+        self.encrypted_deck = msg.deck
+        msg.sign(self.deck_key)
+        msg.done = True
 
         print('[GAME] Comitting deck to all users...')
-        # Proto.send_msg(self.sock, msg)
+        Proto.send_msg(self.sock, msg)
+        print('[GAME] Waiting for deck keys to decrypt deck...')

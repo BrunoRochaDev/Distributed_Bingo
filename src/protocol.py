@@ -97,20 +97,47 @@ class GenerateDeck(Message):
 
 class GenerateCard(Message):
     """Players will pass this message around until everyone has commited their card"""
-    def __init__(self, sequence : int, deck : list ,signatures : list = []):
+    def __init__(self, sequence : int, deck : list ,signatures : list = [], done : bool = False):
         self.header = "GENCARD"
         self.sequence = sequence
         self.deck = deck
         self.signatures = signatures
+        self.done = done
 
-    def sign(self, private_key : str) -> str:
+    def sign(self, private_key : str) -> None:
         # TODO Sign with private key
         #return Crypto.sign_ECC(private_key, )
-        return "signature"
+        self.signatures.append("signature")
 
     @classmethod
     def parse(cls, j : dict):
-        return GenerateCard(j['sequence'], j['deck'], j['signatures'])
+        return GenerateCard(j['sequence'], j['deck'], j['signatures'], j['done'])
+
+class DeckKeyRequest(Message):
+    """Message requesting that players and caller reveal their symmetric key after the deck is commited"""
+    def __init__(self, sequence : int):
+        self.header = "DECKKEYREQ"
+        self.sequence = sequence
+
+    @classmethod
+    def parse(cls, j : dict):
+        return DeckKeyRequest(j['sequence'])
+
+class DeckKeyResponse(Message):
+    """Response to the deck key request"""
+    def __init__(self, sequence : int, response : str, signature : str = None):
+        self.header = "DECKKEYRES"
+        self.sequence = sequence
+        self.response = response
+        self.signature = signature
+
+    def sign(self, private_key : str) -> None:
+        # TODO Sign with private key
+        self.signature = "signature"
+
+    @classmethod
+    def parse(cls, j : dict):
+        return DeckKeyResponse(j['sequence'], j['response'], j['signature'])
 
 class GameOver(Message):
     """Message for when the game is over / aborted """
@@ -184,6 +211,10 @@ class Proto:
             return GenerateDeck.parse(j)
         elif j['header'] == 'GENCARD':
             return GenerateCard.parse(j)
+        elif j['header'] == 'DECKKEYREQ':
+            return DeckKeyRequest.parse(j)
+        elif j['header'] == 'DECKKEYRES':
+            return DeckKeyResponse.parse(j)
         elif j['header'] == 'GAMEOVER':
             return GameOver.parse(j)
         else:

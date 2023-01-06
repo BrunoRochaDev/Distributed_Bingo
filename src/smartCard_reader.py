@@ -26,8 +26,6 @@ class SmartCardSession():
         """Retuns Public and Private keys"""
 
 
-
-
         return (self.session.findObjects([
                   (PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY), 
                   ])[0], self.session.findObjects([

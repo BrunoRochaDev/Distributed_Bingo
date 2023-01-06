@@ -71,6 +71,19 @@ class Crypto:
 
         return ciphertext
 
+    @classmethod
+    def asym_decrypt(cls, key, crypted_data: bytes) -> bytes:
+        """Encrypts data using given key"""
+        
+        data = key.decrypt(crypted_data,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+
+        return data
 
 
 
@@ -92,7 +105,8 @@ msg_ = b'uwu'
 (priv_k, publ_k) = Crypto.asym_gen()
 print(priv_k)
 print(publ_k)
-print(Crypto.asym_encrypt(publ_k, msg_))
+crypted_data = Crypto.asym_encrypt(publ_k, msg_)
+print(Crypto.asym_decrypt(priv_k, crypted_data))
 
 """
         msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)

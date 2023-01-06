@@ -78,7 +78,7 @@ class User:
             elif msg.header == 'PARTY':
                 print(f'[GAME] Party status: {msg.current}/{msg.maximum} ({"Caller present" if msg.caller else "Caller absent"})')
                 if msg.caller and msg.current == msg.maximum:
-                    print('[GAME] Game starting...')
+                    print('[GAME] Game starting shortly...')
             elif msg.header == 'GENDECK':
                 self.generate_deck(sock, msg)
             elif msg.header == 'GENCARD':

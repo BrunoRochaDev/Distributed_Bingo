@@ -2,6 +2,7 @@ from src.common import UserData, LogEntry
 import socket # websockets
 import sys # for closing the app
 import selectors # for multiplexing
+import time # for sleeping
 
 # for generating random challenges
 import random
@@ -17,6 +18,9 @@ class PlayingArea:
 
     # the number of players needed for a game to start
     PARTY_MAX = 2
+
+    # countdown to start the game
+    GAME_COUNTDOWN = 1
 
     # length of the challenge string for authentication
     CHALLENGE_LENGTH = 14
@@ -320,7 +324,14 @@ class PlayingArea:
             self.start_game()
 
     def start_game(self):
-        print('[GAME] Game starting...')
+        print(f'[GAME] Game starting in {self.GAME_COUNTDOWN} second(s)...')
+        print('[SEC] Sending everyone the list of all the participants.')
+        self.get_user_list(self.caller[0], GetUsers("",""))
+        for sock in self.players.keys():
+            self.get_user_list(sock, GetUsers("",""))
+
+        time.sleep(self.GAME_COUNTDOWN)
+        print('[GAME] Game started.')
         self.playing = True
 
         # deck generation

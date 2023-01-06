@@ -1,11 +1,16 @@
 from src.user import *
+import random
+from src.crypto import Crypto
 
 class Caller(User):
 
     def __init__(self, nickname : str):
         print(f'You are a CALLER. Your nickname is "{nickname}".')
         self.CC_public = 'caller_CC'
-        self.playing_key = nickname+'_playing_key'
+        self.playing_key = nickname+'_playing_key' # TODO asym key pair, ECC
+
+        self.signed_deck = False
+
         super().__init__(nickname)
 
     def handle_input(self, stdin):
@@ -26,3 +31,34 @@ class Caller(User):
             Proto.send_msg(self.sock, Register(self.nickname, self.playing_key, self.CC_public, "signature"))
         else:
             print('Invalid input.')
+
+    def generate_deck(self, sock : socket, msg : GenerateCard):
+        """Generate the deck"""
+        print('[GAME] Generating deck...')
+        self.deck = [n for n in range(msg.deck_size)]
+        random.shuffle(self.deck)
+
+        # encrypt each number with the sym key
+        #encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
+        encrypted_deck = [1, 2, 3]
+
+        print(f'[GAME] Deck generated : {self.deck}')
+        self.signed_deck = True
+
+        # creating the card generation message
+        card_msg = GenerateCard(1, encrypted_deck)
+        card_msg.signatures.append(card_msg.sign(self.deck_key))
+
+        Proto.send_msg(sock, card_msg)
+
+    def generate_card(self, sock : socket, msg : GenerateCard):
+        """The deck made all the way back after all players generated their cards"""
+        print('[GAME] Received deck after all players made their cards. Validating it...')
+
+        self.encrypted_deck = msg.deck
+        msg.sign(self.deck_key)
+        msg.done = True
+
+        print('[GAME] Comitting deck to all users...')
+        Proto.send_msg(self.sock, msg)
+        print('[GAME] Waiting for deck keys to decrypt deck...')

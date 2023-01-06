@@ -18,6 +18,9 @@ class User:
     def __init__(self, nickname : str):
         self.nickname = nickname
 
+        self.deck_key = 'deck_key' # TODO sym key, AES128
+        self.encrypted_deck = None
+
         self.authenticated = False # not authenticated at the start
         self.registered = False # not registered at the start
 
@@ -69,6 +72,12 @@ class User:
                 print(f'[GAME] Party status: {msg.current}/{msg.maximum} ({"Caller present" if msg.caller else "Caller absent"})')
                 if msg.caller and msg.current == msg.maximum:
                     print('[GAME] Game starting...')
+            elif msg.header == 'GENDECK':
+                self.generate_deck(sock, msg)
+            elif msg.header == 'GENCARD':
+                self.generate_card(sock, msg)
+            elif msg.header == 'DECKKEYREQ':
+                self.deck_key_request(sock, msg)
             elif msg.header == 'GAMEOVER':
                 print(f'[GAME] {msg}')
         else:
@@ -108,4 +117,16 @@ class User:
         else:
             print(f'[REG] ...registration failed. The nickname "{self.nickname}" might be already taken, try another.')
             self.running = False
-            pass
+
+    def deck_key_request(self, sock : socket, msg : DeckKeyRequest):
+
+        # received a deck key request but have not received commited deck 
+        if not self.encrypted_deck:
+            print("[ERROR] Deck key request received but don't have commited deck.")
+            # TODO disqualify game?
+            return
+
+        print('[GAME] Sending my deck key to other players...')
+        response = DeckKeyResponse(msg.sequence, self.deck_key)
+        response.sign(self.playing_key)
+        Proto.send_msg(sock, response)

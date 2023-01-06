@@ -16,7 +16,7 @@ class PlayingArea:
     PORT = 1024
 
     # the number of players needed for a game to start
-    PARTY_MAX = 1
+    PARTY_MAX = 2
 
     # length of the challenge string for authentication
     CHALLENGE_LENGTH = 14
@@ -88,8 +88,14 @@ class PlayingArea:
         """Accepts the connection from a client (player)"""
 
         connection, address = sock.accept()
-        print(f"[NET] Accepted connection from {address}.")
 
+        # only accepts connection if game has not yet started
+        if self.playing:
+            print(f"[NET] Refused a connection because the game has already begun.")
+            connection.close()
+            return
+
+        print(f"[NET] Accepted connection from {address}.")
         self.selector.register(connection, selectors.EVENT_READ, data="")
 
     def service_connection(self, key):
@@ -108,6 +114,8 @@ class PlayingArea:
                 self.get_user_list(sock, msg)
             elif msg.header == 'GETLOG':
                 self.get_audit_log(sock, msg)
+            elif msg.header == 'GENCARD':
+                self.gen_card(sock, msg)
 
             # log the message
             if msg.should_log():
@@ -289,31 +297,65 @@ class PlayingArea:
 
         # add the caller if exists
         if self.caller:
-            res.append(caller[1])
+            res.append(self.caller[1])
 
         msg.response = res
         Proto.send_msg(sock, msg)
 
-
     def party_changed(self):
         player_count = len(self.players)
         print(f'[GAME] Party status: {player_count}/{self.PARTY_MAX} ({"(Caller present)" if self.caller else "Caller absent"})')
-
-        # start game if party is full and there's a caller
-        if player_count == self.PARTY_MAX and self.caller:
-            self.start_game()
 
         # notifies players
         if player_count > 0:
             print('[GAME] Notifying players on party status...')
             for sock in self.players.keys():
                 Proto.send_msg(sock, PartyUpdate(player_count, self.PARTY_MAX, self.caller != None))
+
             if self.caller:
                 Proto.send_msg(self.caller[0], PartyUpdate(player_count, self.PARTY_MAX, True))
+
+        # start game if party is full and there's a caller
+        if player_count == self.PARTY_MAX and self.caller:
+            self.start_game()
 
     def start_game(self):
         print('[GAME] Game starting...')
         self.playing = True
+
+        # deck generation
+        print('[GAME] Initiating deck generation.')
+        print('[GAME] Asking Caller to generate the deck...')
+        Proto.send_msg(self.caller[0], GenerateDeck(self.deck_size))
+
+    def gen_card(self, sock : socket, msg : GenerateCard):
+        def find_user_by_sequence(sequence : id):
+            for socket, player in self.players.items():
+                if player.sequence == sequence:
+                    return socket, player
+            return None, None
+
+        # if the card generation has made all the way back to the caller...
+        if msg.done:
+            # ... distribute it to every player
+            for _sock in self.players.keys():
+                Proto.send_msg(_sock, msg)
+
+            # and ask for the deck key
+            Proto.send_msg(self.caller[0], DeckKeyRequest(0))
+            for seq in range(1,len(self.players)+1):
+                _sock, _ = find_user_by_sequence(seq)
+                Proto.send_msg(_sock, DeckKeyRequest(seq))
+            return
+
+        next_socket, next_player = find_user_by_sequence(msg.sequence)
+
+        # If there's no next player, send it back to the caller
+        if not next_socket:
+            next_socket, next_player = self.caller
+
+        print(f'[NET] Forwarding deck to {next_player.nickname}... ({msg.sequence}/{len(self.players) + 1})')
+        Proto.send_msg(next_socket, msg)
 
     def poweroff(self):
         """Shutdowns the server"""

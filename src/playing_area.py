@@ -16,7 +16,7 @@ class PlayingArea:
     PORT = 1024
 
     # the number of players needed for a game to start
-    PARTY_MAX = 1
+    PARTY_MAX = 2
 
     # length of the challenge string for authentication
     CHALLENGE_LENGTH = 14
@@ -323,7 +323,8 @@ class PlayingArea:
         print('[GAME] Game starting...')
         self.playing = True
 
-        # ask for the caller to generate the deck
+        # deck generation
+        print('[GAME] Initiating deck generation.')
         print('[GAME] Asking Caller to generate the deck...')
         Proto.send_msg(self.caller[0], GenerateDeck(self.deck_size))
 
@@ -340,7 +341,7 @@ class PlayingArea:
         if not next_socket:
             next_socket, next_player = self.caller
 
-        print(f'Forwarding deck to {next_player.nickname}...')
+        print(f'[NET] Forwarding deck to {next_player.nickname}... ({msg.sequence}/{len(self.players) + 1})')
         Proto.send_msg(next_socket, msg)
 
     def poweroff(self):

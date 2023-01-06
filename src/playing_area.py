@@ -323,12 +323,19 @@ class PlayingArea:
 
     def gen_card(self, sock : socket, msg : GenerateCard):
         def find_user_by_sequence(sequence : id):
-            for player in self.players.values():
+            for socket, player in self.players.items():
                 if player.sequence == sequence:
-                    return player
-            return None
+                    return socket, player
+            return None, None
 
-        print(msg)
+        next_socket, next_player = find_user_by_sequence(msg.sequence)
+
+        # If there's no next player, send it back to the caller
+        if not next_socket:
+            next_socket, next_player = self.caller
+
+        print(f'Forwarding deck to {next_player.nickname}...')
+        Proto.send_msg(next_socket, msg)
 
     def poweroff(self):
         """Shutdowns the server"""

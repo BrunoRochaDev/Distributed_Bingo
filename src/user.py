@@ -112,7 +112,3 @@ class User:
         else:
             print(f'[REG] ...registration failed. The nickname "{self.nickname}" might be already taken, try another.')
             self.running = False
-
-    def generate_card(self, sock : socket, msg : GenerateCard):
-        """To be implemented by the class who extends this"""
-        pass

@@ -51,3 +51,15 @@ class Caller(User):
         card_msg.signatures.append(card_msg.sign(self.deck_key))
 
         Proto.send_msg(sock, card_msg)
+
+    def generate_card(self, sock : socket, msg : GenerateCard):
+        """The deck made all the way back after all players generated their cards"""
+        print('[GAME] Received deck after all players made their cards. Validating it...')
+
+        # Shuffle the deck deterministically
+        random.Random(self.playing_key).shuffle(msg.deck)
+
+        msg.signatures.append(msg.sign(self.deck_key))
+
+        print('[GAME] Comitting deck to all users...')
+        # Proto.send_msg(self.sock, msg)

@@ -7,6 +7,7 @@ class Player(User):
         print(f'You are a PLAYER. Your nickname is "{nickname}".')
         self.CC_public = nickname+'_CC'
         self.playing_key = nickname+'_playing_key' 
+        self.deck_key = 'dec'
         super().__init__(nickname)
 
     def handle_input(self, stdin):
@@ -31,11 +32,13 @@ class Player(User):
     def generate_card(self, sock : socket, msg : GenerateCard):
         """Generate the card for this player"""
         print('[GAME] Generating card...')
-        self.card = set() # card is a set of M numbers ranging from 0 to N
 
-        # get M random numbers from 0 to N
-        deck = [n for n in range(msg.deck_size)]
-        random.shuffle(deck)
-        for m in range(msg.card_size):
-            self.card.add(deck[m])
-        print(f'[GAME] Card generated : {self.card}')
+        # Shuffle the deck deterministically
+        random.Random(self.playing_key).shuffle(msg.deck)
+
+        msg.signatures.append(msg.sign(self.deck_key))
+
+        msg.sequence += 1
+
+        print('[GAME] Card generated. Passing it forward...')
+        Proto.send_msg(self.sock, msg)

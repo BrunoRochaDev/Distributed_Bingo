@@ -43,7 +43,7 @@ class Player(User):
         print('[GAME] Generating card...')
 
         # Shuffle the deck deterministically
-        #random.Random(self.playing_key).shuffle(msg.deck)
+        random.Random(self.playing_key).shuffle(msg.deck)
 
         msg.sign(self.deck_key)
 
@@ -51,3 +51,7 @@ class Player(User):
 
         print('[GAME] Card generated. Passing it forward...')
         Proto.send_msg(self.sock, msg)
+
+        # Create dict to hold everyone's deck keys
+        self.deck_keys = {key:None for key in self.users.keys()}
+        self.deck_keys[msg.sequence] = self.deck_key

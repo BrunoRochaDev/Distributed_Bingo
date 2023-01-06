@@ -264,12 +264,12 @@ class PlayingArea:
                 return
 
             print(f'[REG] ...Caller "{msg.nickname}" with public key "{msg.playing_key}" registered.')
-            caller_data = UserData(sequence = 0, nickname = msg.nickname, public_key = msg.playing_key)
+            caller_data = UserData(0, msg.nickname, msg.playing_key)
             self.caller = (sock, caller_data)
         # ... or a player
         else:
             print(f'[REG] ...Player "{msg.nickname}" with public key "{msg.playing_key}" registered.')
-            player_data = UserData(sequence = len(self.players) + 1, nickname = msg.nickname, public_key = msg.playing_key)
+            player_data = UserData(len(self.players) + 1, msg.nickname, msg.playing_key)
             self.players[sock] = player_data # player data is associated with socket so that when a player disconnects, we clear the player data
 
         # inform that registration was successful

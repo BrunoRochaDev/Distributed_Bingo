@@ -2,6 +2,7 @@ import socket # websockets
 import sys # for closing the app
 import selectors # for multiplexing
 import fcntl # For non-blocking stdout
+from src.common import UserData, LogEntry
 import os
 
 from src.protocol import *
@@ -17,6 +18,8 @@ class User:
 
     def __init__(self, nickname : str):
         self.nickname = nickname
+        self.users = {} # userdata of all players
+        self.log = [] # message logs as received from
 
         self.deck_key = 'deck_key' # TODO sym key, AES128
         self.encrypted_deck = None
@@ -65,9 +68,13 @@ class User:
             elif msg.header == 'REGISTER':
                 self.register(sock, msg)
             elif msg.header == 'GETUSERS':
-                print(f'[SEC] Registered users: {msg.response}')
+                self.users = {int(entry['sequence']) : UserData.parse(entry) for entry in msg.response}
+                print('[SEC] Registered users:')
+                print('\n'.join([str(entry) for entry in self.users.values()]))
             elif msg.header == 'GETLOG':
-                print(f'[SEC] Logged messages: {msg.response}')
+                self.log = [LogEntry.parse(entry) for entry in msg.response]
+                print('[SEC] Logged messages:')
+                print('\n'.join([str(entry) for entry in self.log]))
             elif msg.header == 'PARTY':
                 print(f'[GAME] Party status: {msg.current}/{msg.maximum} ({"Caller present" if msg.caller else "Caller absent"})')
                 if msg.caller and msg.current == msg.maximum:

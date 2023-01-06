@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding  
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import ec 
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 class Crypto:
     """Cryptographic utilities"""
@@ -45,12 +45,48 @@ class Crypto:
 
     @classmethod
     def asym_gen(cls) -> tuple:
-        """Generates a new Asymetric key pair"""
+        """Generates a new Asymetric key(Object) pair"""
         
-        private_key = ec.generate_private_key(
-            ec.SECP384R1()
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=4096,
         )
+
         
         return (private_key, private_key.public_key())
 
- 
+    @classmethod
+    def asym_encrypt(cls, key, data: bytes) -> bytes:
+        """Encrypts data using given key"""
+        
+        
+        pass
+
+
+
+
+""" HOW TO USE:
+
+    Symetric:
+
+        msg_ = b'uwu'  
+
+        (key,nonce) = Crypto.sym_gen()
+        msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)
+
+        print("\n")
+
+    Asymetric:
+"""
+msg_ = b'uwu'  
+
+(priv_k, publ_k) = Crypto.asym_gen()
+print(priv_k)
+print(publ_k)
+
+"""
+        msg = Crypto.sym_decrypt(Crypto.sym_encrypt(msg_, key, nonce), key, nonce)
+
+        print("\n")
+    
+"""

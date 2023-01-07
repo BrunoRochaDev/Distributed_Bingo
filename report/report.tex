@@ -6,6 +6,8 @@
 
 \usepackage[margin=1.25in]{geometry}
 \usepackage{graphicx}
+\graphicspath{ {.} }
+
 
 \begin{document}
 
@@ -48,10 +50,12 @@
 
 To handle communication between nodes in the network we developd a Communication Protocol. Communication is handled by the \emph{Playing Area}. It listens and accepts connections from \emph{Users} (Players, Callers).\\
 \par {\Large Authentication and registration Process}
+\\ \\
+Uses \emph{challenge-response authentication}. 
 \begin{enumerate}
 
 
-  \item A User sends an Authenticate Message. With this message a user authenticates themselves to the playing area. Uses \emph{challenge-response authentication}. The user sends his \emph{Public Key}
+  \item A User sends an Authenticate Message. With this message a user authenticates themselves to the playing area.The user sends his \emph{Public Key}.
   \item The Playing Area respondes also with an Authenticate Message containing its own \emph{Public Key} and \emph{Challenge} to be validated by the User.
   \item The User send an Authenticate Message with a response to the challenge
   \item This response is validated by the \emph{Playing Area} and if it successfully authenticates it sends a Authenticate Message with the parameter Success as True. If it does not successfully authenticate the message it \textbf{blacklists the connection}. \par With the authentication process completed the user can now register himself.
@@ -59,6 +63,9 @@ To handle communication between nodes in the network we developd a Communication
   \item The 	Playing Area verifies that the nickname is not taken, verifies that the User completed the authentication process, verifies the signature. If the Authorization Key belongs to a known Caller it accepts it as a Caller. Reponds with a Registration Message with the paremeter success as True or False and the sequence number corresponding to that Player.
 
 \end{enumerate}
+\begin{center}
+\includegraphics{AuthenticateUML.png}
+\end{center}
 
 
 \end{document}

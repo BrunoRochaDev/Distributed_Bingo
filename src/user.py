@@ -143,13 +143,13 @@ class User:
         # received a deck key request but have not received commited deck 
         if not self.encrypted_deck:
             print("[ERROR] Deck key request received but don't have commited deck.")
-            # TODO disqualify game?
+            self.poweroff()
             return
 
         # sequence must mach
         if msg.sequence != self.sequence:
             print("[ERROR] Deck key request received has incorrect sequence")
-            # TODO disqualify?
+            self.poweroff()
             return
 
         print('[SEC] Sending my deck key to other players...') 
@@ -163,7 +163,7 @@ class User:
         public_key = self.users[msg.sequence].public_key
         if not msg.verify(public_key, msg.signature):
             print('[ERROR] Received a deck key response with invalid signature.')
-            # TODO notify caller
+            self.poweroff()
             return
 
         self.deck_keys[msg.sequence] = msg.response
@@ -199,7 +199,7 @@ class User:
 
             if not Crypto.verify(get_public_key(seq), str(self.encrypted_deck), signature): # if it's invalid...
                 print("[ERROR] There's an invalid signature in the deck. Game should be aborted.")
-                # TODO abort game
+                self.poweroff()
                 return
 
             # unencrypts the deck
@@ -230,7 +230,6 @@ class User:
 
         if not valid:
             print('[SEC] Invalid deck. Abandoning game...')
-            # TODO communicate other players?
             self.poweroff()
             return
 

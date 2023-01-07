@@ -201,12 +201,10 @@ class PlayingArea:
 
             # if challenge does not match, player is trying to evade authentication
             if challenge != msg.challenge:
-                # TODO: blacklist connection
                 return
 
             # TODO: verify the signature
             if False: # if signature if forged
-                # TODO: blacklist connection
                 print(f'[AUTH] "{msg.public_key}" has forged it\'s signature. Request denied.')
                 return
 
@@ -223,7 +221,6 @@ class PlayingArea:
         else:
             # message is not supposed to have challenge or response yet
             if msg.challenge or msg.response:
-                # TODO: blacklist connection
                 return
 
             # create random challenge
@@ -243,7 +240,6 @@ class PlayingArea:
 
         # users cannot register themselves before they are authorized
         if msg.auth_key not in self.authorized_keys.values():
-            # TODO: blacklist connection
             print(f'[REG] ...user was not authorized. Request denied.')
             return
 
@@ -263,7 +259,6 @@ class PlayingArea:
 
         # signature must be valid
         if False: # signature is not valid
-            # TODO: blacklist connection
             print(f'[REG] ...signature forged. Request denied.')
             return
 

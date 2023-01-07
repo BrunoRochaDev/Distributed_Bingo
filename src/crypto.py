@@ -55,12 +55,14 @@ class Crypto:
             key_size=2048,
         )
         
-        return (private_key, private_key.public_key())
+        return ( Crypto.serialize_private_key(private_key), Crypto.serialize_public_key(private_key.public_key()))
 
     @classmethod
-    def asym_encrypt(cls, public_key, data) -> bytes:
+    def asym_encrypt(cls, public_key: str, data) -> bytes:
         """Encrypts data using given public key"""
         
+        public_key = Crypto.load_public_key(public_key)
+
         data=bytes(str(data), 'utf-8')
         ciphertext = public_key.encrypt(data,
             
@@ -74,8 +76,10 @@ class Crypto:
         return ciphertext
 
     @classmethod
-    def asym_decrypt(cls, private_key, crypted_data) -> bytes:
+    def asym_decrypt(cls, private_key: str, crypted_data) -> bytes:
         """Encrypts data using given private key"""
+
+        private_key = Crypto.load_private_key(private_key)
         
         crypted_data=bytes(str(crypted_data), 'utf-8')
         data = private_key.decrypt(crypted_data,
@@ -89,9 +93,11 @@ class Crypto:
         return data
 
     @classmethod
-    def sign(cls, private_key, data) -> bytes:
+    def sign(cls, private_key: str, data) -> bytes:
         """Returns Signature of given data signed with given private key"""
           
+        private_key = Crypto.load_private_key(private_key)
+
         data=bytes(str(data), 'utf-8')
         signature = private_key.sign(
             data,
@@ -105,9 +111,11 @@ class Crypto:
         return signature
 
     @classmethod
-    def verify(cls, public_key, message, signature: bytes) -> bool:
+    def verify(cls, public_key: str, message, signature: bytes) -> bool:
         """Verifies if given message matches with given signature"""
           
+        public_key = Crypto.load_public_key(public_key)
+
         message =message.encode()
         try:  
             public_key.verify(

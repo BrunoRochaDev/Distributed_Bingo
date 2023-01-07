@@ -64,7 +64,7 @@ class Player(User):
 
         # Shuffle the deck deterministically
         msg.deck = self.deterministic_shuffle(msg.deck, str(self.deck_key))
-        print(f'SHUFFLE : {msg.deck}')
+        #TODO msg.deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
 
         msg.sign(self.private_key)
 

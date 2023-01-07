@@ -39,7 +39,7 @@ class Caller(User):
 
         # encrypt each number with the sym key
         encrypted_deck = self.deck
-        #encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
+        #TODO encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
 
         print(f'[GAME] Deck generated : {self.deck}')
         self.signed_deck = True

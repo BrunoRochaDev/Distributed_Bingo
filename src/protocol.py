@@ -27,22 +27,24 @@ class Authenticate(Message):
     def parse(cls, j : dict):
         return Authenticate(j['public_key'], j['challenge'], j['response'], j['success'])
 
-class Register(Message):
+class Register(Message): 
+     
     """Message for players registering themselves to the playing area"""
     def __init__(self, nickname : str, playing_key : str, auth_key : str, signature : str, success : bool = False, sequence : int = None):
         self.header = 'REGISTER'
         self.nickname = nickname
-        self.playing_key = Crypto.serialize_public_key(playing_key)
+        self.playing_key = playing_key
         self.auth_key = auth_key
         self.signature = signature
         self.success = success
         self.sequence = sequence
 
     @classmethod
-    def parse(cls, j : dict):
-        return Register(j['nickname'], Crypto.load_public_key(j['playing_key']), j['auth_key'], j['signature'], j['success'], j['sequence'])
+    def parse(cls, j : dict): 
+        return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'], j['sequence'])
 
 class GetUsers(Message):
+ 
     """Message for getting a list of registered users"""
     def __init__(self, public_key : str, signature : str, response : list = None):
         self.header = 'GETUSERS'
@@ -54,8 +56,9 @@ class GetUsers(Message):
         return False
 
     @classmethod
-    def parse(cls, j : dict):
-        return GetUsers(j['public_key'], j['signature'], j['response'])
+    def parse(cls, j : dict): 
+        return GetUsers( j['public_key'], j['signature'], j['response'])
+
 
 class GetLog(Message):
     """Message for getting a list of logged messages"""

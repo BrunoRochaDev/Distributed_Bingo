@@ -272,7 +272,7 @@ class PlayingArea:
                 Proto.send_msg(sock, msg)
                 return
 
-            print(f'[REG] ...Caller "{msg.nickname}" with public key "{msg.playing_key}" registered.')
+            print(f'[REG] ...Caller "{msg.nickname}" with public key "{msg.playing_key}" registered.')  
             caller_data = UserData(0, msg.nickname, msg.playing_key)
             self.caller = (sock, caller_data)
             msg.sequence = 0
@@ -311,6 +311,9 @@ class PlayingArea:
             res.append(self.caller[1])
 
         msg.response = res
+
+        print("\n Public key; \n" + str(msg.response[0]) + "\n\n")
+
         Proto.send_msg(sock, msg)
 
     def party_changed(self):

@@ -19,6 +19,10 @@ class LogEntry:
         sign = Crypto.sign(private_key, str(self.sequence)+str(self.timestamp)+self.prev_hash+self.text) # Get signature
         send_format = base64.b64encode(sign).decode('ascii') # Transform to sending forma
         self.signature = send_format
+    
+    def verify(self, public_key, signature: str) -> bool:
+        signature = base64.b64decode(signature.encode('ascii')) # Transform back to bytes
+        return Crypto.verify(public_key, str(self.sequence)+str(self.timestamp)+self.prev_hash+self.text, signature) # Return true if matches false if it doesnt 
 
     def hash(self) -> str:
         return 'hash'
@@ -30,7 +34,8 @@ class LogEntry:
     def __str__(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=False)
 
-class UserData:
+class UserData: 
+
     """Object for storing user data"""
     def __init__(self, sequence : int, nickname : str, public_key : str):
         self.sequence = sequence
@@ -43,4 +48,3 @@ class UserData:
 
     def __str__(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=False)
-

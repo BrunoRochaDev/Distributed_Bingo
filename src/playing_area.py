@@ -284,6 +284,9 @@ class PlayingArea:
         msg.success = True
         Proto.send_msg(sock, msg)
 
+        # let them know of the card size used for the game
+        Proto.send_msg(sock, CardSize(self.card_size))
+
         # trigger party changed event since someone joined
         self.party_changed()
 

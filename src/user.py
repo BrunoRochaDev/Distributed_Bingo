@@ -69,6 +69,9 @@ class User:
                 self.authenticate(sock, msg)
             elif msg.header == 'REGISTER':
                 self.register(sock, msg)
+            elif msg.header == 'CARDSIZE':
+                print(f'[GAME] Informed by the playing area that the card size is of {msg.card_size} numbers.')
+                self.card_size = msg.card_size
             elif msg.header == 'GETUSERS':
                 self.users = {int(entry['sequence']) : UserData.parse(entry) for entry in msg.response}
                 print('[SEC] Registered users:')
@@ -208,7 +211,7 @@ class User:
         self.cards = {}
         for seq in range(1,total):
             seed = self.deck_keys[seq]
-            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)[:5] # TODO 5 should not be hardwired
+            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)[:self.card_size] 
             print(f'{self.users[seq].nickname} {"(You)" if seq == self.sequence else ""} : {self.cards[seq]}')
 
         # now that the deck and card are known, find the winner
@@ -216,7 +219,7 @@ class User:
 
     def declare_winner(self):
         """Verifies which card gets filled first"""
-        fill = {seq : [False for i in range(5)] for seq in self.users.keys() } # TODO 5 should not be hardwired
+        fill = {seq : [False for i in range(self.card_size)] for seq in self.users.keys() }
         
         # sequence of the winners
         winners = []
@@ -233,7 +236,6 @@ class User:
             if winners != []:
                 break
 
-        print(f'WINNERS {winners}')
         if winners:
             if len(winners) == 1:
                 print(f'[GAME] Game over! The winner is {self.users[winners[0]].nickname}.')

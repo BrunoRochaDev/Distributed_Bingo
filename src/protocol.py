@@ -41,6 +41,19 @@ class Register(Message):
     def parse(cls, j : dict):
         return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'], j['sequence'])
 
+class CardSize(Message):
+    """Simple message for letting users know the card size"""
+    def __init__(self, card_size : int):
+        self.header = 'CARDSIZE'
+        self.card_size = card_size
+
+    def should_log(self) -> bool:
+        return False
+
+    @classmethod
+    def parse(cls, j : dict):
+        return CardSize(j['card_size'])
+
 class GetUsers(Message):
     """Message for getting a list of registered users"""
     def __init__(self, public_key : str, signature : str, response : list = None):
@@ -205,6 +218,8 @@ class Proto:
             return Authenticate.parse(j)
         elif j['header'] == 'REGISTER':
             return Register.parse(j)
+        elif j['header'] == 'CARDSIZE':
+            return CardSize.parse(j)
         elif j['header'] == 'GETUSERS':
             return GetUsers.parse(j)
         elif j['header'] == 'GETLOG':

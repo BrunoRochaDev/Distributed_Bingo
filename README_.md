@@ -1,8 +1,26 @@
 # Secure_Bingo
 ## _Assigment 2_
 
-Communication Protocol and Cryptography Protocol documentation.
+Project Documentation
 
+## Files
+*
+    | | |
+    |---|----|
+    | File | Description |
+    | Caller.py | Script for initializing the Caller process (requires nickname) |
+    | Player.py | Script for initializing the Player process (requires nickname) |
+    | PlayingArea.py | Script for initializing the Playing Area  process (requires card and deck size) |
+    | src/user.py | Generic logic for both the caller and player |
+    | src/caller.py | Extends user.py and implements Caller specific logic |
+    | src/player.py | Extends user.py and implements Player specific logic |
+    | src/playing_area.py | Playing Area logic |
+    | src/protocol.py | Contains the messages classes and functions for sending and receiveing messages through websockets |
+    | src/crypto.py | Helper functions for cryptography operations |
+    | src/common.py | Data types that are common to multiple classes. Namely player and log data. |
+    
+    To test the project, run PlayingArea.py, Caller.py and at least two Player.py instances.
+    
 ## Communication Protocol
 
 ### Messages

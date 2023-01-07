@@ -31,7 +31,7 @@ class Register(Message):
     def __init__(self, nickname : str, playing_key : str, auth_key : str, signature : str, success : bool = False, sequence : int = None):
         self.header = 'REGISTER'
         self.nickname = nickname
-        self.playing_key = playing_key
+        self.playing_key = Crypto.serialize_private_key(playing_key)
         self.auth_key = auth_key
         self.signature = signature
         self.success = success
@@ -39,7 +39,7 @@ class Register(Message):
 
     @classmethod
     def parse(cls, j : dict):
-        return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'], j['sequence'])
+        return Register(j['nickname'], Crypto.load_private_key(j['playing_key']), j['auth_key'], j['signature'], j['success'], j['sequence'])
 
 class GetUsers(Message):
     """Message for getting a list of registered users"""
@@ -106,12 +106,13 @@ class GenerateCard(Message):
         self.done = done
 
     def sign(self, private_key : str) -> None: 
-        #sign = Crypto.sign(private_key, self.deck)
-        sign = 'sign'
-        self.signatures.append(sign)
+        sign = Crypto.sign(private_key, str(self.deck))
+        #sign = 'sign'
+        print("\n\n" + str(sign) + "\n\n")
+        self.signatures.append(str(sign))
         
     def verify(self, public_key, signature) -> bool:
-        return Crypto.verify(public_key, self.deck, signature)
+        return Crypto.verify(public_key, str(self.deck), signature)
 
     @classmethod
     def parse(cls, j : dict):
@@ -136,8 +137,8 @@ class DeckKeyResponse(Message):
         self.signature = signature
 
     def sign(self, private_key : str) -> None:
-        # TODO Sign with private key
-        self.signature = "signature"
+        #Think I need to verify this
+        self.signature = str(Crypto.sign(private_key, str(self.sequence)+self.response))
 
     @classmethod
     def parse(cls, j : dict):

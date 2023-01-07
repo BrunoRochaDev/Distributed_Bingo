@@ -1,4 +1,5 @@
 import json # for serializing
+from src.crypto import Crypto
 
 class LogEntry:
     """Entry for recording actions and messages"""
@@ -14,7 +15,7 @@ class LogEntry:
         return LogEntry(j['sequence'], j['timestamp'], j['prev_hash'], j['text'], j['signature'])
 
     def sign(self, private_key):
-        self.signature = 'signature' # TODO
+        self.signature = Crypto.sign(private_key, str(self.sequence)+str(self.timestamp)+self.prev_hash+self.text)
 
     def hash(self) -> str:
         return 'hash'

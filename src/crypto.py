@@ -154,17 +154,6 @@ class Crypto:
         return key_string.decode() 
 
 
-print("\n")
-(pr_k, pu_k) = Crypto.asym_gen()
 
-pu_k_s = Crypto.serialize_public_key(pu_k)
-pr_k_s = Crypto.serialize_private_key(pr_k)
-
-print(str(pu_k) + " -> " + pu_k_s + "\n")
-print(str(pr_k) + " -> " + pr_k_s + "\n")
-
-pu_k = Crypto.load_public_key(pu_k_s)
-pr_k = Crypto.load_private_key(pr_k_s)
-
-print(str(pu_k_s) + " -> " + str(pu_k) + "\n")
-print(str(pr_k_s) + " -> " + str(pr_k) + "\n")
+pr_k, pu_k = Crypto.asym_gen()
+sign = Crypto.sign(pr_k, 'uwudsifndsonfidsnfsdncdnfwgeipldsoignor vodkpvsdmvos odsmacdsn')

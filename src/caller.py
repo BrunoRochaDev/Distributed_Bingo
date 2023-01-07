@@ -6,8 +6,7 @@ class Caller(User):
 
     def __init__(self, nickname : str):
         print(f'You are a CALLER. Your nickname is "{nickname}".')
-        self.CC_public = 'caller_CC'
-        self.playing_key = nickname+'_playing_key' # TODO asym key pair, ECC
+        self.CC_public = 'caller_CC' 
 
         self.signed_deck = False
 
@@ -28,7 +27,7 @@ class Caller(User):
             Proto.send_msg(self.sock, GetLog(self.CC_public, "signature"))
         elif text == 'REGISTER' and not self.registered and self.authenticated:
             print(f'[REG] Registering yourself to the playing area as "{self.nickname}"...')
-            Proto.send_msg(self.sock, Register(self.nickname, self.playing_key, self.CC_public, "signature"))
+            Proto.send_msg(self.sock, Register(self.nickname, self.private_key, self.CC_public, "signature"))
         else:
             print('Invalid input.')
 
@@ -47,7 +46,7 @@ class Caller(User):
 
         # creating the card generation message
         card_msg = GenerateCard(1, encrypted_deck)
-        card_msg.signatures.append(card_msg.sign(self.playing_key))
+        card_msg.sign(self.private_key) 
 
         Proto.send_msg(sock, card_msg)
 
@@ -58,7 +57,7 @@ class Caller(User):
         self.encrypted_deck = msg.deck
         self.deck_signatures = msg.signatures
 
-        msg.sign(self.deck_key)
+        msg.sign(self.private_key)
         msg.done = True
 
         # Create dict to hold everyone's deck keys

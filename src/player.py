@@ -1,11 +1,11 @@
 from src.user import *
+from src.crypto import Crypto
 
 class Player(User):
 
     def __init__(self, nickname : str):
         print(f'You are a PLAYER. Your nickname is "{nickname}".')
-        self.CC_public = nickname+'_CC'
-        self.playing_key = nickname+'_playing_key' 
+        self.CC_public = nickname+'_CC' 
         super().__init__(nickname)
 
     def handle_input(self, stdin):
@@ -23,7 +23,7 @@ class Player(User):
             Proto.send_msg(self.sock, GetLog(self.CC_public, "signature"))
         elif text == 'REGISTER' and not self.registered and self.authenticated:
             print(f'[REG] Registering yourself to the playing area as "{self.nickname}"...')
-            Proto.send_msg(self.sock, Register(self.nickname, self.playing_key, self.CC_public, "signature"))
+            Proto.send_msg(self.sock, Register(self.nickname, self.private_key, self.CC_public, "signature"))
         else:
             print('Invalid input.')
 
@@ -51,7 +51,7 @@ class Player(User):
         # Shuffle the deck deterministically
         msg.deck = self.deterministic_shuffle(msg.deck, str(self.deck_key))
 
-        msg.sign(self.deck_key)
+        msg.sign(self.private_key)
 
         msg.sequence += 1
 

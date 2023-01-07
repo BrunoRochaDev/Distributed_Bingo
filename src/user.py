@@ -24,6 +24,8 @@ class User:
         self.log = [] # message logs as received from
 
         self.deck_key = Crypto.sym_gen()[0] # sym key, AES128
+        self.private_key, self.public_key = Crypto.asym_gen()
+
         self.encrypted_deck = None
 
         self.authenticated = False # not authenticated at the start
@@ -147,7 +149,7 @@ class User:
         print('[SEC] Sending my deck key to other players...')
         # TODO deck_key must be sent in a way that the other side can reconstruct
         response = DeckKeyResponse(msg.sequence, str(self.deck_key))
-        response.sign(self.playing_key)
+        response.sign(self.private_key)
         Proto.send_msg(sock, response)
 
     def deck_key_response(self, sock : socket, msg : DeckKeyResponse):

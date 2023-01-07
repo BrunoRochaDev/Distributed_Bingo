@@ -40,6 +40,9 @@ class PlayingArea:
         self.authorized_keys = {} # key is socket, value is a public key ; data is associated with the socket so that when an user disconnects, we clear the data
         self.challenges = {} # dict for associating public key to the challenge for users not yet authenticated
 
+        # Sets Up Private/Public key
+        (self.private_key, self.public_key) = Crypto.asym_gen()
+
         # Log for every command given to the playing area
         self.log = [LogEntry.genesis_block()]
 
@@ -169,7 +172,7 @@ class PlayingArea:
         entry = LogEntry(sequence, timestamp, last_hash, text)
 
         # TODO : playing area should sign this
-        entry.sign('private_key')
+        entry.sign(self.private_key)
 
         self.log.append(entry)
 

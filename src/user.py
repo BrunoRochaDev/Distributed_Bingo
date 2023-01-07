@@ -200,7 +200,7 @@ class User:
 
 
         # now we have the decrypted, unshuffled deck
-        self.deck = self.encrypted_deck
+        self.deck = list(self.encrypted_deck)
         print(f'[GAME] The decrypted deck is: {self.deck}')
 
         # calculate each player card...
@@ -209,7 +209,7 @@ class User:
         for seq in range(1,total):
             seed = self.deck_keys[seq]
             self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)[:5] # TODO 5 should not be hardwired
-            print(f'{"(You)" if seq == self.sequence else self.users[seq].nickname} : {self.cards[seq]}')
+            print(f'{self.users[seq].nickname} {"(You)" if seq == self.sequence else ""} : {self.cards[seq]}')
 
         # now that the deck and card are known, find the winner
         self.declare_winner()
@@ -221,10 +221,8 @@ class User:
         # sequence of the winners
         winners = []
 
-        print(self.deck)
         # look for winners
         for num_deck in self.deck:
-            print(num_deck)
             for seq, card in self.cards.items():
                 for idx, num_card in enumerate(card):
                     if num_card == num_deck:
@@ -235,12 +233,13 @@ class User:
             if winners != []:
                 break
 
+        print(f'WINNERS {winners}')
         if winners:
             if len(winners) == 1:
                 print(f'[GAME] Game over! The winner is {self.users[winners[0]].nickname}.')
             else:
                 winner_names = [self.users[seq].nickname for seq in winners]
-                print(f'[GAME] Game over! The winners are {", ".join(winner_names[:-2])} and {winner_names[-1]}.')
+                print(f'[GAME] Game over! The winners are {", ".join(winner_names[:-1])} and {winner_names[-1]}.')
         else:
             print('[GAME] Game over! There were no winners.')
 

@@ -258,10 +258,10 @@ class User:
 
         if winners:
             if len(winners) == 1:
-                print(f'[GAME] Game over! The winner is {self.users[winners[0]].nickname}.')
+                print(f'[GAME] Bingo! The winner is {self.users[winners[0]].nickname}.')
             else:
                 winner_names = [self.users[seq].nickname for seq in winners]
-                print(f'[GAME] Game over! The winners are {", ".join(winner_names[:-1])} and {winner_names[-1]}.')
+                print(f'[GAME] Bingo! The winners are {", ".join(winner_names[:-1])} and {winner_names[-1]}.')
         else:
             print('[GAME] Game over! There were no winners.')
 

@@ -294,7 +294,11 @@ Communication Protocol and Cryptography Protocol documentation.
   \begin{longtable}[]{@{}ll@{}}
   \toprule
   \endhead
-  Description & Message telling the caller to generate the deck and initiate the card generation proccess \tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Description\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+   Message telling the caller to generate the deck and initiate the card generation proccess\strut
+  \end{minipage}\tabularnewline
   Extends & Message\tabularnewline
   Methods & parse()\tabularnewline
   \begin{minipage}[t]{0.40\columnwidth}\raggedright
@@ -314,8 +318,11 @@ Communication Protocol and Cryptography Protocol documentation.
   \begin{longtable}[]{@{}ll@{}}
   \toprule
   \endhead
-  Description & Message Players will pass around until everyone has commited their card \tabularnewline
-  Extends & Message\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Description\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+   Message Players will pass around until everyone has commited their card\strut
+  \end{minipage}\tabularnewline
   Methods & parse(), sign(), verify\tabularnewline
   \begin{minipage}[t]{0.40\columnwidth}\raggedright
   Parameters\strut

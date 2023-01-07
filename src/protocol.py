@@ -178,17 +178,6 @@ class GameOver(Message):
         else:
             return 'Error :('
 
-class GameWon(Message):
-    """Message for anouncing a player won the game"""
-    def __init__(self, winner : str, signature : str = None):
-        self.header = "GAMEWON"
-        self.winner = winner
-        self.signature = signature
-
-    @classmethod
-    def parse(cls, j : dict):
-        return GameWon(j['winner'], j['signature'])
-
 class Proto:
 
     HEADER_SIZE = 4

@@ -223,7 +223,7 @@ class User:
         if not valid:
             print('[SEC] Invalid deck. Abandoning game...')
             # TODO communicate other players?
-            self.playing = False
+            self.poweroff()
             return
 
         # calculate each player card...
@@ -265,7 +265,8 @@ class User:
         else:
             print('[GAME] Game over! There were no winners.')
 
-        print('[SEC]')
+        print('[NET] Powering off...')
+        self.poweroff()
 
     # https://crypto.stackexchange.com/q/78309
     def deterministic_shuffle(self, ls, seed : str):
@@ -285,3 +286,8 @@ class User:
         zipped_ls = list(zip(shuffled_ls, shuffled_perm))
         zipped_ls.sort(key=lambda x: x[1])
         return [a for (a, b) in zipped_ls]
+
+    def poweroff(self):
+        """Shutdowns the server"""
+        self.sock.close()
+        sys.exit()

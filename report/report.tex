@@ -92,6 +92,16 @@ We ended up opting for a Challenge-Response authentication approach to prevent a
 \clearpage
 
 \subsection{Deck and Card Generation}
+Once the game automatically starts, the first step is to generate the deck using the procedure described in the project guidelines.\\
+The \emph{playing area} notifies the \emph{caller} that the game has started and that they should generate the deck. The caller, that by now already knows how long the deck should be, generates a shuffled list of \textbf{N} numbers from 0 to \textbf{N-1} (where N is the deck size). Each element from this list is encrypted using their \emph{AES symmetric key} (known as deck key) and signed with their private playing key. \\
+From here on out, this deck gets passed around to all players in sequential order. Each player encrypts the deck with their own deck key, shuffles it around and appends their signature to it. Once every user has done it, the deck goes back to the caller who signs it once more. \\
+Now that the final version of the deck has been created, it is committed to the playing area for all to see. The players and caller must now make their deck key known so that they can reverse the process done to arrive at the original deck and every player’s card. \\
+So now every user is decrypting and unshuffling the card in reverse order, verifying the signatures along the way. At the very end, they all will arrive at the unencrypted, original deck issued by the caller. If something goes wrong along the way, the game is aborted as someone is trying to cheat. \\
+It’s important to note that every shuffling described in this section was done deterministically, using the deck key of the shuffler as seed, which was at that point a secret. Once they are known by all, the shuffling can be undone.\\
+With the unencrypted deck known by all, each user can redo the shuffling in order to arrive at the unencrypted deck as shuffled by each player. The first \textbf{M} numbers are taken to be that player’s card, where \textbf{M} is the size of the card as determined by the playing area.
 
-
+\subsection{Winner Detection}
+At this point, every player and caller knows the original deck and each others cards in a way and knows that nobody could have cheated. \\
+All that is left to do is to go through each card and see which one gets filled the earliest. There is always at least one winner. \\
+The users don’t need to compare their findings as the process itself demands that no foul play must have taken place. Now that everyone knows who the winners are, they all cleanly disconnects from the playing area.
 \end{document}

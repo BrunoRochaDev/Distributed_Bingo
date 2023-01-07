@@ -4,3 +4,4 @@
 \contentsline {subsection}{\numberline {3.1}Authentication}{3}%
 \contentsline {subsection}{\numberline {3.2}Registration}{4}%
 \contentsline {subsection}{\numberline {3.3}Deck and Card Generation}{6}%
+\contentsline {subsection}{\numberline {3.4}Winner Detection}{6}%

@@ -315,8 +315,6 @@ class PlayingArea:
 
         msg.response = res
 
-        print("\n Public key; \n" + str(msg.response[0]) + "\n\n")
-
         Proto.send_msg(sock, msg)
 
     def party_changed(self):

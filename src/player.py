@@ -45,9 +45,7 @@ class Player(User):
         if not msg.deck:
             print('[ERROR] Generate card message does not contain a deck')
             return
-
-        # TODO verify signature
-        
+ 
         pub_key = self.users[self.sequence-1].public_key
         sign = msg.signatures[-1]
         
@@ -63,12 +61,22 @@ class Player(User):
         print('[GAME] Generating card...')
 
         # Shuffle the deck deterministically
-        msg.deck = self.deterministic_shuffle(msg.deck, str(self.deck_key))
-        #TODO msg.deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
+        #print(f"UWUUWU {self.deck_key}")
+        msg.deck = self.deterministic_shuffle(msg.deck, self.deck_key)
+        new_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in msg.deck]
+        msg.deck = new_deck
 
         msg.sign(self.private_key)
 
         msg.sequence += 1
+
+        #print()
+        #print()
+        #print(self.nickname)
+        #print(msg.deck)
+        #print()
+        #print()
+        #print()
 
         print('[GAME] Card generated. Passing it forward...')
         Proto.send_msg(self.sock, msg)

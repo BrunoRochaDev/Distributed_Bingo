@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
-import base64
+import base64 
 
 class Crypto:
     """Cryptographic utilities"""
@@ -14,27 +14,30 @@ class Crypto:
     @classmethod
     def sym_gen(cls) -> tuple:
         """Generates a new AESGCM (key, nonce) tuple""" 
-        return (AESGCM.generate_key(bit_length=128), os.urandom(12))
+        key= AESGCM.generate_key(bit_length=128) 
+        return (base64.b64encode(key).decode('ascii'), os.urandom(12))
 
     @classmethod
     def sym_encrypt(cls, key: bytes, data, nonce: bytes=b'12345678') -> bytes:
         """Encrypts data given with given AESGCM key"""
-
-        data=bytes(str(data), 'utf-8')
+ 
+        key=base64.b64decode(key.encode('ascii'))
+        data=bytes(str(data), 'ascii')
         cypher = AESGCM(key) 
-        ct = cypher.encrypt(nonce, data, None)
-  
-        return ct 
+        ct = cypher.encrypt(nonce, data, None)  
+
+        return base64.b64encode(ct).decode('ascii')
 
     @classmethod
     def sym_decrypt(cls, key: bytes, crypted_data, nonce: bytes=b'12345678') -> bytes:
         """Decrypts encrypted data given with given AESGCM key"""
         
-        crypted_data=bytes(str(crypted_data), 'utf-8')
+        crypted_data=base64.b64decode(crypted_data.encode('ascii'))
+        key=base64.b64decode(key.encode('ascii'))
         cypher = AESGCM(key) 
         data = cypher.decrypt(nonce, crypted_data, None)
-        
-        return data  
+         
+        return data.decode('ascii')
 
     @classmethod
     def do_hash(cls, data: bytes) -> bytes:
@@ -163,8 +166,17 @@ class Crypto:
         )
         return key_string.decode() 
 
-
 """
+key = Crypto.sym_gen()[0]
+
+crypt = Crypto.sym_encrypt(key, 13)
+print("\n crypt -> " + crypt)
+orig = Crypto.sym_decrypt(key, crypt)
+
+print("\n orig -> " + orig)
+
+
+
 
 pr_k, pu_k = Crypto.asym_gen()
 

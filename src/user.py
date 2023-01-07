@@ -152,15 +152,15 @@ class User:
 
         print('[SEC] Sending my deck key to other players...')
         # TODO deck_key must be sent in a way that the other side can reconstruct
-        response = DeckKeyResponse(msg.sequence, str(self.deck_key))
+        response = DeckKeyResponse(msg.sequence, self.deck_key)
         response.sign(self.private_key)
         Proto.send_msg(sock, response)
 
     def deck_key_response(self, sock : socket, msg : DeckKeyResponse):
         """Verifies and stores deck key response"""
-
-        # TODO verify signature
-        if False:
+ 
+        public_key = self.users[msg.sequence].public_key
+        if not msg.verify(public_key, msg.signature):
             print('[ERROR] Received a deck key response with invalid signature.')
             # TODO notify caller
             return
@@ -182,7 +182,10 @@ class User:
         print('[SEC] Starting to decrypt the deck...')
 
         # the deck must have been signed by the caller next
-        if False: # TODO
+        signature = self.deck_signatures.pop()
+        signature = base64.b64decode(signature.encode('ascii'))  
+        
+        if not Crypto.verify(get_public_key(0), str(self.encrypted_deck), signature) : # TODO
             print('[ERROR] Deck was not last signed by the caller')
             return
 
@@ -191,21 +194,23 @@ class User:
         for seq in reversed(range(total)):
             # check if the signature is valid
             signature = self.deck_signatures.pop()
-            if False: # if it's invalid...
+            signature = base64.b64decode(signature.encode('ascii'))  
+
+            if not Crypto.verify(get_public_key(seq), str(self.encrypted_deck), signature): # if it's invalid...
                 print("[ERROR] There's an invalid signature in the deck. Game should be aborted.")
                 # TODO abort game
                 return
 
-            # TODO decipher using deck key
+            # unencrypts the deck
             deck_key = self.deck_keys[seq]
+            self.encrypted_deck = [Crypto.sym_decrypt(deck_key, num) for num in self.encrypted_deck]
 
             # unshuffle the deck to get to the state of the previous player
             if seq != 0: 
-                seed = self.deck_keys[seq]
-                self.encrypted_deck = self.deterministic_unshuffle(self.encrypted_deck, seed)
-
+                self.encrypted_deck = self.deterministic_unshuffle(self.encrypted_deck, deck_key) # deck key is seed
 
         # now we have the decrypted, unshuffled deck
+        self.encrypted_deck = [int(num) for num in self.encrypted_deck] # converts str to int
         self.deck = list(self.encrypted_deck)
         print(f'[GAME] The decrypted deck is: {self.deck}')
 

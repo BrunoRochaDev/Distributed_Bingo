@@ -39,7 +39,7 @@ class Caller(User):
 
         # encrypt each number with the sym key
         encrypted_deck = self.deck
-        #TODO encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
+        encrypted_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in self.deck]
 
         print(f'[GAME] Deck generated : {self.deck}')
         self.signed_deck = True
@@ -63,6 +63,14 @@ class Caller(User):
         # Create dict to hold everyone's deck keys
         self.deck_keys = {key:None for key in self.users.keys()}
         self.deck_keys[0] = self.deck_key
+
+        #print()
+        #print()
+        #print("CALLER FINAL DECK")
+        #print(msg.deck)
+        #print()
+        #print()
+        #print()
 
         print('[GAME] Comitting deck to all users...')
         Proto.send_msg(self.sock, msg)

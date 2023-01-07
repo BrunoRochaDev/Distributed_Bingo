@@ -72,12 +72,12 @@ The authentication entails verifying that the user in question is a Portuguese c
 \\ The handshake goes as follows:
 
 \begin{enumerate}
-  \item The user asks the \emph{Playing Area} to be authenticated by sending a authentication message containing their CC’s public key.
+  \item The user asks the \emph{Playing Area} to be authenticated by sending a authentication message containing their RSA public Key (We were going to use the key present in the CC but it was no possible to complete this is time).
   \item The \emph{Playing Area} sends a nonce to the user as a challenge.
-  \item The \emph{user} encrypts the challenge with their CC’s private key and sends it back to the playing area.
+  \item The \emph{user} encrypts the challenge with their RSA private key and sends it back to the playing area.
   \item The user verifies that the response it got matches the nonce and public key. If so, a message is sent to the \emph{user} letting them know they are authenticated.
 \end{enumerate}
-The nonce consists of a string of random characters of variable length (by default, 14). It is wise to not set this length too low otherwise repeated challenges might occur and adversaries may then employ replay attacks to bypass authentication. \\ Authenticated users are not ready to join the game as of yet. For that, they must be registered. At this step, the playing area merely recognizes them as a Portuguese system citizen. They can now, however, ask the playing area for message logs and a list of registered users. \\ Also, the playing area possesses a set of CC public keys that are reserved for callers. As such, what determines if a user will be a player or a caller.
+The nonce consists of a string of random characters of variable length (by default, 14). It is wise to not set this length too low otherwise repeated challenges might occur and adversaries may then employ replay attacks to bypass authentication. \\ Authenticated users are not ready to join the game as of yet. For that, they must be registered. At this step, the playing area merely recognizes them as a Portuguese system citizen. They can now, however, ask the playing area for message logs and a list of registered users. \\ Also, the playing area possesses a set of RSA public keys that are reserved for callers. As such, what determines if a user will be a player or a caller.
 
 \subsection{Registration}
 The next and final step for a user to be fully ready to participate in the game is the registration process. It’s purpose is to establish what is the public key that will be used during the game, as the CC’s key pair is only used for authentication purposes. The user must also register himself a nickname to aid identification by humans. \\ The registration also is done through a handshake.
@@ -106,6 +106,9 @@ With the unencrypted deck known by all, each user can redo the shuffling in orde
 At this point, every player and caller knows the original deck and each others cards in a way and knows that nobody could have cheated. \\
 All that is left to do is to go through each card and see which one gets filled the earliest. There is always at least one winner. \\
 The users don’t need to compare their findings as the process itself demands that no foul play must have taken place. Now that everyone knows who the winners are, they all cleanly disconnects from the playing area.
+\begin{center}
+\includegraphics[scale=0.6]{flowchart.png}
+\end{center}
 
 \section{Protocol}\label{protocol}
 

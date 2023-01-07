@@ -5,7 +5,10 @@ class Player(User):
 
     def __init__(self, nickname : str):
         print(f'You are a PLAYER. Your nickname is "{nickname}".')
-        self.CC_public = nickname+'_CC' 
+        
+        #self.CC_public = nickname+'_CC' 
+        self.CC_private, self.CC_public = Crypto.asym_gen()
+
         super().__init__(nickname)
 
     def handle_input(self, stdin):

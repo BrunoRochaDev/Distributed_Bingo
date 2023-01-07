@@ -120,10 +120,12 @@ class User:
                 return
 
             print(f'[AUTH] Received "{msg.challenge}" challenge from the playing area. Responding...')
+ 
 
-            # TODO: properly sign the response
-            response = 'response'
-            msg.response = response
+            response = Crypto.sign(self.CC_private, msg.challenge)
+            msg.response = base64.b64encode(response).decode('ascii') # Transform to sending format
+
+
 
             # send it back to the playing area
             Proto.send_msg(sock, msg)

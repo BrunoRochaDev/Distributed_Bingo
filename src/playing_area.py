@@ -26,7 +26,17 @@ class PlayingArea:
     CHALLENGE_LENGTH = 14
 
     # public keys that can be callers
-    VALID_CALLERS = set(['caller_CC'])
+    VALID_CALLERS = set([
+        """-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtoqIL+zjU69K159wo/E2
+odAje0eTFG9jB09E9wdrg3rzjS4oZGaKb6aNgv0lxJHQzCTXeHNSujEkQPLuJMCc
+v2nYmi6E/3FJb/mBgCU9HIlphqz5QQEMTS7SO8orpGR2mZxnM9KXygHXG2NP1w/N
+0+ZTQmEW79cJnNlDndWjFnIjNj4RQBPDfWnQGtfNOVy6Y6nqLEROU/QsjGHR+Baj
+KstAjJWI5H5mIIEiIWidEYlmGNvd+An5bjW+cYZr5wft0//lxp9gD4jOyWeuISCw
+JTrNKygmMLmLZUKNN5VRp+PnGJvzUzYSwiYtaAVJqvWtcUTSlFTgjv12gb/MZfS2
+XwIDAQAB
+-----END PUBLIC KEY-----"""
+    ])
 
     def __init__(self, card_size : int, deck_size : int):
         self.card_size = card_size
@@ -204,7 +214,8 @@ class PlayingArea:
                 return
 
             # TODO: verify the signature
-            if False: # if signature if forged
+            signature = base64.b64decode(msg.response.encode('ascii')) # Transform back to bytes
+            if not Crypto.verify(msg.public_key, msg.challenge, signature): # if signature if forged
                 print(f'[AUTH] "{msg.public_key}" has forged it\'s signature. Request denied.')
                 return
 

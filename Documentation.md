@@ -40,7 +40,17 @@ Communication Protocol and Cryptography Protocol documentation.
     |Methods| parse(), should_log() __returns false__|
     |Parameters|<ul><li>public_key</li><li>signature</li><li>response</li></ul>|
 
-    
+
+* **CardSize**    
+
+    | | |
+    |---|----|
+    | Description | Simple message for letting users know the card size |
+    |Extends|Message|
+    |Methods| parse(), should_log() __returns false__|
+    |Parameters|<ul><li> card_size</li></ul>|
+
+
 * **GetLog**
 
     | | |
@@ -145,3 +155,6 @@ Communication Protocol and Cryptography Protocol documentation.
     |---|----|
     | Description | Exception when source message is not Proto.|
   
+
+
+## Cryptography Protocol

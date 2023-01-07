@@ -1,5 +1,6 @@
 import json # for serializing
 from src.crypto import Crypto
+import base64
 
 class LogEntry:
     """Entry for recording actions and messages"""
@@ -15,7 +16,9 @@ class LogEntry:
         return LogEntry(j['sequence'], j['timestamp'], j['prev_hash'], j['text'], j['signature'])
 
     def sign(self, private_key):
-        self.signature = Crypto.sign(private_key, str(self.sequence)+str(self.timestamp)+self.prev_hash+self.text)
+        sign = Crypto.sign(private_key, str(self.sequence)+str(self.timestamp)+self.prev_hash+self.text) # Get signature
+        send_format = base64.b64encode(sign).decode('ascii') # Transform to sending forma
+        self.signature = send_format
 
     def hash(self) -> str:
         return 'hash'

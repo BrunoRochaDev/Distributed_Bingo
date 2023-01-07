@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
+import base64
 
 class Crypto:
     """Cryptographic utilities"""
@@ -107,6 +108,7 @@ class Crypto:
     def verify(cls, public_key, message, signature: bytes) -> bool:
         """Verifies if given message matches with given signature"""
           
+        message =message.encode()
         try:  
             public_key.verify(
                 signature,
@@ -154,6 +156,43 @@ class Crypto:
         return key_string.decode() 
 
 
+"""
 
 pr_k, pu_k = Crypto.asym_gen()
-sign = Crypto.sign(pr_k, 'uwudsifndsonfidsnfsdncdnfwgeipldsoignor vodkpvsdmvos odsmacdsn')
+
+Sign:     
+
+    sign = Crypto.sign(pr_k, 'uwu')
+
+        print("\n")
+        print("orig -> " + str(sign))
+        #print("Decoded -> " + sign.decode())
+
+ToString:    
+
+    sign_base64 = base64.b64encode(sign)
+    sign_string = (sign_base64).decode('ascii')
+
+        print("\n")
+        print("sign_base64 -> " + str(sign_base64))
+        print("\n")
+        print("sign_string -> " + sign_string)
+
+ToBytes: 
+
+    sign_base64 = sign_string.encode('ascii')
+
+        print("\n")
+        print("sign_base64 -> " + str(sign_base64))
+
+    orig = base64.b64decode(sign_base64)
+
+        print("\n")
+        print("orig -> " + str(orig))
+        print("\n")
+
+Verify:
+
+    print(Crypto.verify( pu_k, 'uwu', orig))
+
+"""

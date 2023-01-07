@@ -27,7 +27,7 @@ class Caller(User):
             Proto.send_msg(self.sock, GetLog(self.CC_public, "signature"))
         elif text == 'REGISTER' and not self.registered and self.authenticated:
             print(f'[REG] Registering yourself to the playing area as "{self.nickname}"...')
-            Proto.send_msg(self.sock, Register(self.nickname, self.private_key, self.CC_public, "signature"))
+            Proto.send_msg(self.sock, Register(self.nickname, self.public_key, self.CC_public, "signature"))
         else:
             print('Invalid input.')
 

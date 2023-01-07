@@ -23,7 +23,7 @@ class Player(User):
             Proto.send_msg(self.sock, GetLog(self.CC_public, "signature"))
         elif text == 'REGISTER' and not self.registered and self.authenticated:
             print(f'[REG] Registering yourself to the playing area as "{self.nickname}"...')
-            Proto.send_msg(self.sock, Register(self.nickname, self.private_key, self.CC_public, "signature"))
+            Proto.send_msg(self.sock, Register(self.nickname, self.public_key, self.CC_public, "signature"))
         else:
             print('Invalid input.')
 
@@ -45,6 +45,20 @@ class Player(User):
         if not msg.deck:
             print('[ERROR] Generate card message does not contain a deck')
             return
+
+        # TODO verify signature
+        
+        pub_key = self.users[self.sequence-1].public_key
+        sign = msg.signatures[-1]
+        
+        print("\n\n" + str(pub_key) + "\n\n" )
+        print("\n\n" + str(sign) + "\n\n")
+        
+        if not msg.verify(pub_key, sign):
+            print("Abort GAme")
+            return
+            # TODO abort game 
+
 
         print('[GAME] Generating card...')
 

@@ -152,8 +152,7 @@ class User:
             # TODO disqualify?
             return
 
-        print('[SEC] Sending my deck key to other players...')
-        # TODO deck_key must be sent in a way that the other side can reconstruct
+        print('[SEC] Sending my deck key to other players...') 
         response = DeckKeyResponse(msg.sequence, self.deck_key)
         response.sign(self.private_key)
         Proto.send_msg(sock, response)

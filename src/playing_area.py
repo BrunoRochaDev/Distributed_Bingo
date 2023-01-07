@@ -275,20 +275,20 @@ class PlayingArea:
             print(f'[REG] ...Caller "{msg.nickname}" with public key "{msg.playing_key}" registered.')  
             caller_data = UserData(0, msg.nickname, msg.playing_key)
             self.caller = (sock, caller_data)
-            msg.sequence = 0
+            sequence = 0
         # ... or a player
         else:
             print(f'[REG] ...Player "{msg.nickname}" with public key "{msg.playing_key}" registered.')
             player_data = UserData(len(self.players) + 1, msg.nickname, msg.playing_key)
             self.players[sock] = player_data # player data is associated with socket so that when a player disconnects, we clear the player data
-            msg.sequence = len(self.players)
+            sequence = len(self.players)
 
         # inform that registration was successful
         msg.success = True
         Proto.send_msg(sock, msg)
 
-        # let them know of the card size used for the game
-        Proto.send_msg(sock, GameInfo(self.card_size, self.deck_size))
+        # let them know info about the game
+        Proto.send_msg(sock, GameInfo(sequence, self.card_size, self.deck_size))
 
         # trigger party changed event since someone joined
         self.party_changed()

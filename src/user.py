@@ -4,6 +4,7 @@ import selectors # for multiplexing
 import fcntl # For non-blocking stdout
 from src.common import UserData, LogEntry
 import random # for shuffling
+import time # for sleeping
 import os
 
 from src.protocol import *
@@ -72,6 +73,8 @@ class User:
             elif msg.header == 'REGISTER':
                 self.register(sock, msg)
             elif msg.header == 'GAMEINFO':
+                print(f'[GAME] I am the user of sequence {msg.sequence}')
+                self.sequence = msg.sequence
                 print(f'[GAME] Card and deck size is of {msg.card_size} and {msg.deck_size} numbers respectivally.')
                 self.card_size = msg.card_size
                 self.deck_size = msg.deck_size
@@ -129,7 +132,6 @@ class User:
         # if the registration was a success
         if msg.success:
             self.registred = True
-            self.sequence = msg.sequence
             print(f'[REG] ...registration was a success. I am the user of sequence {self.sequence}.')
         # was not a success
         else:
@@ -265,14 +267,15 @@ class User:
 
         if winners:
             if len(winners) == 1:
-                print(f'[GAME] Game over! The winner is {self.users[winners[0]].nickname}.')
+                print(f'[GAME] Bingo! The winner is {self.users[winners[0]].nickname}.')
             else:
                 winner_names = [self.users[seq].nickname for seq in winners]
-                print(f'[GAME] Game over! The winners are {", ".join(winner_names[:-1])} and {winner_names[-1]}.')
+                print(f'[GAME] Bingo! The winners are {", ".join(winner_names[:-1])} and {winner_names[-1]}.')
         else:
             print('[GAME] Game over! There were no winners.')
 
         print('[NET] Powering off...')
+        time.sleep(1)
         self.poweroff()
 
     # https://crypto.stackexchange.com/q/78309

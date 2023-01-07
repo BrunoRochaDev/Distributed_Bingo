@@ -1,0 +1,6 @@
+\contentsline {section}{\numberline {1}Introduction}{2}%
+\contentsline {section}{\numberline {2}Entities}{3}%
+\contentsline {section}{\numberline {3}Walk-through}{3}%
+\contentsline {subsection}{\numberline {3.1}Authentication}{3}%
+\contentsline {subsection}{\numberline {3.2}Registration}{4}%
+\contentsline {subsection}{\numberline {3.3}Deck and Card Generation}{6}%

@@ -35,16 +35,16 @@ class Register(Message):
         self.auth_key = auth_key
         self.signature = signature
         self.success = success
-        self.sequence = sequence
 
     @classmethod
     def parse(cls, j : dict):
-        return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'], j['sequence'])
+        return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'])
 
 class GameInfo(Message):
     """Simple message for letting users know the card and deck size"""
-    def __init__(self, card_size : int, deck_size : int):
+    def __init__(self, sequence : int, card_size : int, deck_size : int):
         self.header = 'GAMEINFO'
+        self.sequence = sequence
         self.card_size = card_size
         self.deck_size = deck_size
 
@@ -53,7 +53,7 @@ class GameInfo(Message):
 
     @classmethod
     def parse(cls, j : dict):
-        return GameInfo(j['card_size'], j['deck_size'])
+        return GameInfo(j['sequence'], j['card_size'], j['deck_size'])
 
 class GetUsers(Message):
     """Message for getting a list of registered users"""

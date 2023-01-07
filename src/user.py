@@ -180,12 +180,9 @@ class User:
             print('[ERROR] Deck was not last signed by the caller')
             return
 
+        # starts unshuffling and decrypting deck to arrive at cards
         total = len(self.deck_keys)
         for seq in reversed(range(total)):
-            if seq != 0: # unshuffle the deck
-                seed = self.deck_keys[seq]
-                self.encrypted_deck = self.deterministic_unshuffle(self.encrypted_deck, seed)
-
             # check if the signature is valid
             signature = self.deck_signatures.pop()
             if False: # if it's invalid...
@@ -196,6 +193,12 @@ class User:
             # TODO decipher using deck key
             deck_key = self.deck_keys[seq]
 
+            # unshuffle the deck to get to the state of the previous player
+            if seq != 0: 
+                seed = self.deck_keys[seq]
+                self.encrypted_deck = self.deterministic_unshuffle(self.encrypted_deck, seed)
+
+
         # now we have the decrypted, unshuffled deck
         self.deck = self.encrypted_deck
         print(f'[GAME] The decrypted deck is: {self.deck}')
@@ -205,8 +208,41 @@ class User:
         self.cards = {}
         for seq in range(1,total):
             seed = self.deck_keys[seq]
-            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)
+            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)[:5] # TODO 5 should not be hardwired
             print(f'{"(You)" if seq == self.sequence else self.users[seq].nickname} : {self.cards[seq]}')
+
+        # now that the deck and card are known, find the winner
+        self.declare_winner()
+
+    def declare_winner(self):
+        """Verifies which card gets filled first"""
+        fill = {seq : [False for i in range(5)] for seq in self.users.keys() } # TODO 5 should not be hardwired
+        
+        # sequence of the winners
+        winners = []
+
+        print(self.deck)
+        # look for winners
+        for num_deck in self.deck:
+            print(num_deck)
+            for seq, card in self.cards.items():
+                for idx, num_card in enumerate(card):
+                    if num_card == num_deck:
+                        fill[seq][idx] = True
+                        break
+            # if there are winners, stop looking
+            winners = [seq for seq, card in fill.items() if all(card)]
+            if winners != []:
+                break
+
+        if winners:
+            if len(winners) == 1:
+                print(f'[GAME] Game over! The winner is {self.users[winners[0]].nickname}.')
+            else:
+                winner_names = [self.users[seq].nickname for seq in winners]
+                print(f'[GAME] Game over! The winners are {", ".join(winner_names[:-2])} and {winner_names[-1]}.')
+        else:
+            print('[GAME] Game over! There were no winners.')
 
     # https://crypto.stackexchange.com/q/78309
     def deterministic_shuffle(self, ls, seed : str):

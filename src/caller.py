@@ -34,7 +34,7 @@ class Caller(User):
     def generate_deck(self, sock : socket, msg : GenerateCard):
         """Generate the deck"""
         print('[GAME] Generating deck...')
-        self.deck = [n for n in range(msg.deck_size)]
+        self.deck = [n for n in range(self.deck_size)]
         random.shuffle(self.deck)
 
         # encrypt each number with the sym key

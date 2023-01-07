@@ -287,6 +287,9 @@ class PlayingArea:
         msg.success = True
         Proto.send_msg(sock, msg)
 
+        # let them know of the card size used for the game
+        Proto.send_msg(sock, GameInfo(self.card_size, self.deck_size))
+
         # trigger party changed event since someone joined
         self.party_changed()
 
@@ -347,7 +350,7 @@ class PlayingArea:
         # deck generation
         print('[GAME] Initiating deck generation.')
         print('[GAME] Asking Caller to generate the deck...')
-        Proto.send_msg(self.caller[0], GenerateDeck(self.deck_size))
+        Proto.send_msg(self.caller[0], GenerateDeck())
 
     def gen_card(self, sock : socket, msg : GenerateCard):
         def find_user_by_sequence(sequence : id):

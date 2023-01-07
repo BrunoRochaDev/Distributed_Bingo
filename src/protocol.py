@@ -43,6 +43,20 @@ class Register(Message):
     def parse(cls, j : dict): 
         return Register(j['nickname'], j['playing_key'], j['auth_key'], j['signature'], j['success'], j['sequence'])
 
+class GameInfo(Message):
+    """Simple message for letting users know the card and deck size"""
+    def __init__(self, card_size : int, deck_size : int):
+        self.header = 'GAMEINFO'
+        self.card_size = card_size
+        self.deck_size = deck_size
+
+    def should_log(self) -> bool:
+        return False
+
+    @classmethod
+    def parse(cls, j : dict):
+        return GameInfo(j['card_size'], j['deck_size'])
+
 class GetUsers(Message):
  
     """Message for getting a list of registered users"""
@@ -92,13 +106,12 @@ class PartyUpdate(Message):
 
 class GenerateDeck(Message):
     """Message telling the caller to generate the deck and initiate the card generation proccess"""
-    def __init__(self, deck_size : int):
+    def __init__(self):
         self.header = "GENDECK"
-        self.deck_size = deck_size
 
     @classmethod
     def parse(cls, j : dict):
-        return GenerateDeck(j['deck_size'])
+        return GenerateDeck()
 
 class GenerateCard(Message):
     """Players will pass this message around until everyone has commited their card"""
@@ -155,20 +168,23 @@ class DeckKeyResponse(Message):
 
 class GameOver(Message):
     """Message for when the game is over / aborted """
-    def __init__(self, status : str):
+    def __init__(self, status : str, detail : any = None):
         self.header = "GAMEOVER"
         self.status = status
+        self.detail = detail
 
     def should_log(self) -> bool:
         return False
 
     @classmethod
     def parse(cls, j : dict):
-        return GameOver(j['status'])
+        return GameOver(j['status'], j['detail'])
 
     def __str__(self):
         if self.status == 'player_left':
             return 'Game aborted because a player left.'
+        elif self.status == 'player_cheated':
+            return f'Game aborted because {self.detail} cheated.'
         else:
             return 'Error :('
 
@@ -215,6 +231,8 @@ class Proto:
             return Authenticate.parse(j)
         elif j['header'] == 'REGISTER':
             return Register.parse(j)
+        elif j['header'] == 'GAMEINFO':
+            return GameInfo.parse(j)
         elif j['header'] == 'GETUSERS':
             return GetUsers.parse(j)
         elif j['header'] == 'GETLOG':

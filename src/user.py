@@ -71,6 +71,10 @@ class User:
                 self.authenticate(sock, msg)
             elif msg.header == 'REGISTER':
                 self.register(sock, msg)
+            elif msg.header == 'GAMEINFO':
+                print(f'[GAME] Card and deck size is of {msg.card_size} and {msg.deck_size} numbers respectivally.')
+                self.card_size = msg.card_size
+                self.deck_size = msg.deck_size
             elif msg.header == 'GETUSERS':
                 self.users = {int(entry['sequence']) : UserData.parse(entry) for entry in msg.response}
                 print('[SEC] Registered users:')
@@ -99,7 +103,7 @@ class User:
             sock.close()
             self.running = False
 
-    def authenticate(self, sock : socket, msg : Authenticate):
+    def authenticate(self, sock : socket, msg : Authenticate):        
         # only respond if not authenticated. just in case
         if not self.authenticated:
 
@@ -205,12 +209,31 @@ class User:
         self.deck = list(self.encrypted_deck)
         print(f'[GAME] The decrypted deck is: {self.deck}')
 
+        # verify that the deck is valid
+        valid = True
+        if(len(self.deck) != self.deck_size): # must have expected size
+            valid = False
+            print(f'[SEC] Deck has incorrect size! Size of {len(self.deck)}, expected {self.deck_size}.')
+        if len(self.deck) != len(set(self.deck)): # must not have duplicate numbers
+            valid = False
+            print('[SEC] Deck has repeated numbers!')
+        out_of_bounds = [num not in [i for i in range(0, self.deck_size)] for num in self.deck]
+        if (any(out_of_bounds)): # must not have out of bounds numbers
+            valid = False
+            print(f'[SEC] Deck has out of bound numbers! They are: {[self.deck[idx] for idx, val in enumerate(out_of_bounds) if val]}')
+
+        if not valid:
+            print('[SEC] Invalid deck. Abandoning game...')
+            # TODO communicate other players?
+            self.poweroff()
+            return
+
         # calculate each player card...
         print('[GAME] The cards are as following:')
         self.cards = {}
         for seq in range(1,total):
             seed = self.deck_keys[seq]
-            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)[:5] # TODO 5 should not be hardwired
+            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)[:self.card_size] 
             print(f'{self.users[seq].nickname} {"(You)" if seq == self.sequence else ""} : {self.cards[seq]}')
 
         # now that the deck and card are known, find the winner
@@ -218,7 +241,7 @@ class User:
 
     def declare_winner(self):
         """Verifies which card gets filled first"""
-        fill = {seq : [False for i in range(5)] for seq in self.users.keys() } # TODO 5 should not be hardwired
+        fill = {seq : [False for i in range(self.card_size)] for seq in self.users.keys() }
         
         # sequence of the winners
         winners = []
@@ -235,7 +258,6 @@ class User:
             if winners != []:
                 break
 
-        print(f'WINNERS {winners}')
         if winners:
             if len(winners) == 1:
                 print(f'[GAME] Game over! The winner is {self.users[winners[0]].nickname}.')
@@ -244,6 +266,9 @@ class User:
                 print(f'[GAME] Game over! The winners are {", ".join(winner_names[:-1])} and {winner_names[-1]}.')
         else:
             print('[GAME] Game over! There were no winners.')
+
+        print('[NET] Powering off...')
+        self.poweroff()
 
     # https://crypto.stackexchange.com/q/78309
     def deterministic_shuffle(self, ls, seed : str):
@@ -263,3 +288,8 @@ class User:
         zipped_ls = list(zip(shuffled_ls, shuffled_perm))
         zipped_ls.sort(key=lambda x: x[1])
         return [a for (a, b) in zipped_ls]
+
+    def poweroff(self):
+        """Shutdowns the server"""
+        self.sock.close()
+        sys.exit()

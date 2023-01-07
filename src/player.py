@@ -49,9 +49,6 @@ class Player(User):
         pub_key = self.users[self.sequence-1].public_key
         sign = msg.signatures[-1]
         
-        print("\n\n" + str(pub_key) + "\n\n" )
-        print("\n\n" + str(sign) + "\n\n")
-        
         if not msg.verify(pub_key, sign):
             print("Abort GAme")
             return

@@ -128,7 +128,7 @@ class PlayingArea:
 
             # log the message
             if msg.should_log():
-                self.log_message(msg)
+                self.log_message(sock, msg)
         else:
             print(f"[NET] Connection with a user has been lost.")
 
@@ -157,11 +157,15 @@ class PlayingArea:
             self.selector.unregister(sock)
             sock.close()
 
-    def log_message(self, msg : Message):
+    def log_message(self, sock : socket, msg : Message):
 
-        sequence = 0 # TODO
+        sequence = None
+        if self.caller and self.caller[0] == sock:
+            sequence = 0
+        elif sock in self.players.keys():
+            sequence = self.players[sock].sequence
 
-        timestamp = 'now' # TODO
+        timestamp = 'now'
 
         last_entry = self.log[-1]
         last_hash = last_entry.hash()
@@ -170,8 +174,7 @@ class PlayingArea:
 
         # creates the log entry from the message
         entry = LogEntry(sequence, timestamp, last_hash, text)
-
-        # TODO : playing area should sign this
+ 
         entry.sign(self.private_key)
 
         self.log.append(entry)

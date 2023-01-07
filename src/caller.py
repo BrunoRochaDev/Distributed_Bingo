@@ -63,15 +63,7 @@ class Caller(User):
         # Create dict to hold everyone's deck keys
         self.deck_keys = {key:None for key in self.users.keys()}
         self.deck_keys[0] = self.deck_key
-
-        #print()
-        #print()
-        #print("CALLER FINAL DECK")
-        #print(msg.deck)
-        #print()
-        #print()
-        #print()
-
+ 
         print('[GAME] Comitting deck to all users...')
         Proto.send_msg(self.sock, msg)
         print('[GAME] Waiting for deck keys to decrypt deck...')

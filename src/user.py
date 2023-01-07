@@ -187,7 +187,7 @@ class User:
         signature = self.deck_signatures.pop()
         signature = base64.b64decode(signature.encode('ascii'))  
         
-        if not Crypto.verify(get_public_key(0), str(self.encrypted_deck), signature) : # TODO
+        if not Crypto.verify(get_public_key(0), str(self.encrypted_deck), signature) :  
             print('[ERROR] Deck was not last signed by the caller')
             return
 

@@ -157,4 +157,64 @@ Communication Protocol and Cryptography Protocol documentation.
   
 
 
-## Cryptography Protocol
+## Cryptography Protocol, Crypto (Class)
+
+Cryptographic utilities
+
+Uses **cryptography.hazmat.primitives**
+
+### Methods
+
+* **sym_gen**
+    | | |
+    |---|----|
+    | Description | Generates a new AESGCM (key, nonce) tuple|
+    |Parameters||
+    |Return | tuple |
+
+* **sym_encrypt**
+    | | |
+    |---|----|
+    | Description | Encrypts data given with given AESGCM key|
+    |Parameters|<ul><li> key: bytes</li><li>data</li><li>nonce: bytes</li></ul>|
+    |Return | bytes |
+
+* **sym_decrypt**
+    | | |
+    |---|----|
+    | Description | Decrypts encrypted data given with given AESGCM key |
+    |Parameters|<ul><li> key: bytes</li><li>crypted_data</li><li>nonce: bytes</li></ul>|
+    |Return | bytes |
+
+* **do_hash**
+
+    | | |
+    |---|----|
+    | Description | Returns an hash of a given data; Uses SHA256|
+    |Parameters|data: bytes|
+    |Return | bytes |
+
+* **asym_gen**
+
+    | | |
+    |---|----|
+    | Description | Encrypts data using given public key|
+    |Parameters||
+    |Return | bytes |
+
+
+* **sign**
+
+    | | |
+    |---|----|
+    | Description | Returns Signature of given data signed with given private key; Uses SHA256|
+    |Parameters|<ul><li> private_key</li><li>data</ul>|
+    |Return | bytes |
+
+* **verify**
+
+    | | |
+    |---|----|
+    | Description | Verifies if given message matches with given signature; Uses SHA256|
+    |Parameters|<ul><li> public_key</li><li>message</li> <li>signature: bytes</li></ul>|
+    |Return | bool |

@@ -431,69 +431,6 @@ Communication Protocol and Cryptography Protocol documentation.
 
 \end{itemize}
 
-\subsubsection{Proto (Class)}\label{proto-class}
-
-\begin{itemize}
-\item
-  \textbf{Methods}
-
-  \begin{itemize}
-  \item
-    send\_msg \textbar{} \textbar{} \textbar{}
-    \textbar---\textbar----\textbar{} \textbar{} Description \textbar{}
-    Sends through a connection a Message object. \textbar{}
-    \textbar Parameters\textbar{}
-
-    connection: socket
-
-    msg: Message
-
-    \textbar Return \textbar{} None \textbar{}
-  \item
-    recv\_msg
-
-    \begin{longtable}[]{@{}ll@{}}
-    \toprule
-    \endhead
-    Description & Receives through a connection a Message
-    object.\tabularnewline
-    \bottomrule
-    \end{longtable}
-
-    \textbar Parameters\textbar{}
-
-    connection: socket
-
-    \textbar Return \textbar{} Message \textbar{}
-  \item
-    parse\_msg
-
-    \begin{longtable}[]{@{}ll@{}}
-    \toprule
-    \endhead
-    Description & Returns from message string a Message
-    Instance\tabularnewline
-    \bottomrule
-    \end{longtable}
-
-    \textbar Parameters\textbar{}
-
-    msg\_str: str
-
-    \textbar Return \textbar{} Message \textbar{}
-  \end{itemize}
-\item
-  \textbf{ProtoBadFormat} (Class)
-
-  \begin{longtable}[]{@{}ll@{}}
-  \toprule
-  \endhead
-  Description & Exception when source message is not
-  Proto.\tabularnewline
-  \bottomrule
-  \end{longtable}
-\end{itemize}
-
 \subsection{Cryptography Protocol, Crypto
 (Class)}\label{cryptography-protocol-crypto-class}
 
@@ -505,37 +442,80 @@ Uses \textbf{cryptography.hazmat.primitives}
 
 \begin{itemize}
 \item
-  \textbf{sym\_gen} \textbar{} \textbar{} \textbar{}
-  \textbar---\textbar----\textbar{} \textbar{} Description \textbar{}
-  Generates a new AESGCM (key, nonce) tuple\textbar{}
-  \textbar Parameters\textbar\textbar{} \textbar Return \textbar{} tuple
-  \textbar{}
+  \textbf{sym\_gen} 
+	
+	
+  \begin{longtable}[]{@{}ll@{}}
+  \toprule
+  \endhead
+  Description & Generates a new AESGCM (key, nonce) tuple\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Parameters\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+\strut
+  \end{minipage}\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Return\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+	tuple \strut
+  \end{minipage}\tabularnewline
+  \bottomrule
+  \end{longtable}
+  
+  
 \item
-  \textbf{sym\_encrypt} \textbar{} \textbar{} \textbar{}
-  \textbar---\textbar----\textbar{} \textbar{} Description \textbar{}
-  Encrypts data given with given AESGCM key\textbar{}
-  \textbar Parameters\textbar{}
+  \textbf{sym\_encrypt} 
+  
+		
+  \begin{longtable}[]{@{}ll@{}}
+  \toprule
+  \endhead
+  Description & Encrypts data given with given AESGCM key\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Parameters\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+  \begin{itemize}
+  	\item key: bytes
+  	\item data
+  	\item  nonce: bytes
+  \end{itemize} \strut
+  \end{minipage}\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Return \strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+	bytes \strut
+  \end{minipage}\tabularnewline
+  \bottomrule
+  \end{longtable}
+  
+  
 
-  key: bytes
 
-  data
-
-  nonce: bytes
-
-  \textbar Return \textbar{} bytes \textbar{}
 \item
-  \textbf{sym\_decrypt} \textbar{} \textbar{} \textbar{}
-  \textbar---\textbar----\textbar{} \textbar{} Description \textbar{}
-  Decrypts encrypted data given with given AESGCM key \textbar{}
-  \textbar Parameters\textbar{}
-
-  key: bytes
-
-  crypted\_data
-
-  nonce: bytes
-
-  \textbar Return \textbar{} bytes \textbar{}
+  \textbf{sym\_decrypt} 
+  
+  	
+  \begin{longtable}[]{@{}ll@{}}
+  \toprule
+  \endhead
+  Description & Decrypts encrypted data given with given AESGCM key\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Parameters\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+  \begin{itemize}
+  	\item key: bytes
+  	\item crypted\_data
+  	\item  nonce: bytes
+  \end{itemize} \strut
+  \end{minipage}\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Return \strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+	bytes \strut
+  \end{minipage}\tabularnewline
+  \bottomrule
+  \end{longtable}
+  
 \item
   \textbf{do\_hash}
 
@@ -559,52 +539,70 @@ Uses \textbf{cryptography.hazmat.primitives}
   Return & bytes\tabularnewline
   \bottomrule
   \end{longtable}
+  
 \item
   \textbf{sign}
-
   \begin{longtable}[]{@{}ll@{}}
   \toprule
   \endhead
-  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+   \begin{minipage}[t]{0.40\columnwidth}\raggedright
   Description\strut
   \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
-  Returns Signature of given data signed with given private key; Uses
-  SHA256\strut
+    Returns Signature of given data signed with given private key; Uses SHA256
+\strut
+  \end{minipage}\ 
+  \tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Parameters\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+  \begin{itemize}
+  	\item private\_key
+  	\item data
+  \end{itemize} \strut
+  \end{minipage}\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Return \strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+	bytes \strut
   \end{minipage}\tabularnewline
   \bottomrule
   \end{longtable}
-
-  \textbar Parameters\textbar{}
-
-  private\_key
-
-  data
-
-  \textbar Return \textbar{} bytes \textbar{}
+  
 \item
   \textbf{verify}
 
+
   \begin{longtable}[]{@{}ll@{}}
   \toprule
   \endhead
-  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+   \begin{minipage}[t]{0.40\columnwidth}\raggedright
   Description\strut
   \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
-  Verifies if given message matches with given signature; Uses
-  SHA256\strut
+    Verifies if given message matches with given signature; Uses SHA256
+  \strut
+  \end{minipage}\ 
+  \tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Parameters\strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+  \begin{itemize}
+  	\item public\_key
+  	\item signature: bytes
+  	\item message
+  \end{itemize} \strut
+  \end{minipage}\tabularnewline
+  \begin{minipage}[t]{0.40\columnwidth}\raggedright
+  Return \strut
+  \end{minipage} & \begin{minipage}[t]{0.54\columnwidth}\raggedright
+	bool \strut
   \end{minipage}\tabularnewline
   \bottomrule
   \end{longtable}
+  
 
-  \textbar Parameters\textbar{}
 
-  public\_key
+  
 
-  message
-
-  signature: bytes
-
-  \textbar Return \textbar{} bool \textbar{}
 \end{itemize}
 
 \end{document}

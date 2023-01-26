@@ -1,6 +1,8 @@
 import PyKCS11
 import binascii
 from asn1crypto import pem, x509
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
 
 
 lib = '/usr/lib/x86_64-linux-gnu/pkcs11/opensc-pkcs11.so'
@@ -20,50 +22,33 @@ class SmartCardSession():
 
         self.pubKey =self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY)])[0]
         
-        self.prikey =  self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY)])[0]
-
-    def getKeys(self):
-        """Retuns Public and Private keys"""
-
-
-        return (self.session.findObjects([
-                  (PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY), 
-                  ])[0], self.session.findObjects([
-                  (PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY), 
-                  ])[0])
 
 
     def getPublicPEM(self):
-
-        dict = self.pubKey.to_dict()
-        cka_value = dict.get("CKA_VALUE")
-        cert_der = bytes(cka_value)
-
-
-        return pem.armor('PUBLIC KEY', cert_der)
-
-    def getCert(self):
-        result = []
-        cert_pem = []
-        certs = self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_CERTIFICATE)])
-        for cert in certs:
-            cka_value, cka_id = self.session.getAttributeValue(cert, [PyKCS11.CKA_VALUE, PyKCS11.CKA_ID])
-            cert_der = bytes(cka_value)
-            cert = x509.Certificate.load(cert_der)
-            # Write out a PEM encoded value
-            cert_pem = pem.armor('CERTIFICATE', cert_der)
-            result.append(cert)
+        """Returns the PEM corresponding to the smart card's public key"""
+        key = self.session.getAttributeValue(self.pubKey, [PyKCS11.CKA_VALUE])
+        keyBytes = bytes(key[0])
         
-        return cert_pem
+
+        cert = serialization.load_der_public_key(keyBytes, backend=default_backend())
+        pem = cert.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
 
 
+        return pem
+
+    def close(self):
+        self.session.logout()
+        self.session.closeSession()
+
+        return
 
 
 
 if __name__ == '__main__':
+    
     smart = SmartCardSession("1111") 
-
-
-
-    result = smart.getCert()
-    print(result.decode())
+    result = smart.getPublicPEM()
+    print(result)

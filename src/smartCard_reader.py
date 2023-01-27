@@ -32,19 +32,14 @@ class SmartCardSession():
 
 
     def getPublicPEM(self):
-        """Returns the PEM corresponding to the smart card's public key as bytes"""
-        key = self.session.getAttributeValue(self.pubKey, [PyKCS11.CKA_VALUE])
-        keyBytes = bytes(key[0])
-        
+        """Returns the modulus and pubExponent corresponding to the smart card's public key as bytes"""
 
-        cert = serialization.load_der_public_key(keyBytes, backend=default_backend())
-        pem = cert.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        modulus, pubexp = self.session.getAttributeValue(
+                self.pubKey, [PyKCS11.CKA_MODULUS, PyKCS11.CKA_PUBLIC_EXPONENT]
         )
 
 
-        return pem
+        return bytes(modulus),bytes(pubexp)
 
     def sign(self,message: bytes):
        
@@ -52,26 +47,6 @@ class SmartCardSession():
         signature = self.session.sign(
                 self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY)])[0], message, PyKCS11.Mechanism(PyKCS11.CKM_SHA256_RSA_PKCS, None)
             )
-
-
-        (modulus, pubexp) = self.session.getAttributeValue(
-                self.pubKey, [PyKCS11.CKA_MODULUS, PyKCS11.CKA_PUBLIC_EXPONENT]
-        )
-
-
-        n = bytes(modulus)
-        e = bytes(pubexp)
-        key = rsa.RSAPublicNumbers(
-            e=int(b2a_hex(e), 16), n=int(b2a_hex(n), 16)
-        )
-        key = key.public_key(backend=default_backend())
-    
-
-        print("verify",key.verify(
-                bytes(signature), message+b'asdasdsa', padding.PKCS1v15(), hashes.SHA256()
-            ))
-
-
 
         return signature
 

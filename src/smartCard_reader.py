@@ -3,6 +3,10 @@ import binascii
 from asn1crypto import pem, x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
+from src.crypto import Crypto
+from cryptography.hazmat.primitives import hashes
+import hashlib
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 lib = '/usr/lib/x86_64-linux-gnu/pkcs11/opensc-pkcs11.so'
@@ -25,7 +29,7 @@ class SmartCardSession():
 
 
     def getPublicPEM(self):
-        """Returns the PEM corresponding to the smart card's public key"""
+        """Returns the PEM corresponding to the smart card's public key as bytes"""
         key = self.session.getAttributeValue(self.pubKey, [PyKCS11.CKA_VALUE])
         keyBytes = bytes(key[0])
         
@@ -39,6 +43,22 @@ class SmartCardSession():
 
         return pem
 
+    def sign(self,message: bytes):
+
+
+        sha256 = hashes.SHA256()
+        signed_data_hash = hashes.Hash(sha256, default_backend())
+        signed_data_hash.update(str(message).encode('utf-8'))
+        digest=signed_data_hash.finalize()
+
+        # sha256 digestInfo
+        binaryData2 =b'\x30\x31\x30\x0d\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01\x05\x00\x04\x20'+digest
+
+        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
+        signature = self.session.sign(self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY)])[0],binaryData2,mechanism)
+        
+        return signature
+
     def close(self):
         self.session.logout()
         self.session.closeSession()
@@ -51,4 +71,5 @@ if __name__ == '__main__':
     
     smart = SmartCardSession("1111") 
     result = smart.getPublicPEM()
-    print(result)
+    print(result.decode("ascii"))
+

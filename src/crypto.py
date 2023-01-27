@@ -142,20 +142,23 @@ class Crypto:
 
 
     @classmethod
-    def verifyFromCard(cls, public_key: bytes, message, signature: bytes) -> bool:
+    def verifyFromCard(cls, public_key: bytes, message: bytes, signature: bytes) -> bool:
         """Verifies if given message matches with given signature"""
 
-        public_key = Crypto.load_public_key(public_key.decode('ascii'))
+        public_key = serialization.load_pem_public_key(public_key,default_backend())
 
-        hash_function = hashes.SHA256()
-        signed_data_hash = hashes.Hash(hash_function, default_backend())
-        signed_data_hash.update(str(message).encode('utf-8'))
-        signed_data_hash = signed_data_hash.finalize()
+
+        digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+
+        hashed = b"\x30\x31\x30\x0d\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01\x05\x00\x04\x20"
+        digest.update(message)
+        hashed += digest.finalize()
+
 
         try:  
             public_key.verify(
                 signature,
-                signed_data_hash,
+                message,
                 padding.PKCS1v15(),
                 hashes.SHA256()
             ) 

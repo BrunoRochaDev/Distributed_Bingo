@@ -7,6 +7,9 @@ from src.crypto import Crypto
 from cryptography.hazmat.primitives import hashes
 import hashlib
 from cryptography.hazmat.primitives.asymmetric import rsa
+from binascii import a2b_hex, b2a_hex
+from cryptography.hazmat.primitives.asymmetric import padding   
+
 
 
 lib = '/usr/lib/x86_64-linux-gnu/pkcs11/opensc-pkcs11.so'
@@ -25,7 +28,7 @@ class SmartCardSession():
         self.session.login(loginCred)
 
         self.pubKey =self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY)])[0]
-        
+
 
 
     def getPublicPEM(self):
@@ -44,19 +47,32 @@ class SmartCardSession():
         return pem
 
     def sign(self,message: bytes):
+       
+
+        signature = self.session.sign(
+                self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY)])[0], message, PyKCS11.Mechanism(PyKCS11.CKM_SHA256_RSA_PKCS, None)
+            )
 
 
-        sha256 = hashes.SHA256()
-        signed_data_hash = hashes.Hash(sha256, default_backend())
-        signed_data_hash.update(str(message).encode('utf-8'))
-        digest=signed_data_hash.finalize()
+        (modulus, pubexp) = self.session.getAttributeValue(
+                self.pubKey, [PyKCS11.CKA_MODULUS, PyKCS11.CKA_PUBLIC_EXPONENT]
+        )
 
-        # sha256 digestInfo
-        binaryData2 =b'\x30\x31\x30\x0d\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01\x05\x00\x04\x20'+digest
 
-        mechanism = PyKCS11.Mechanism(PyKCS11.CKM_SHA1_RSA_PKCS, None)
-        signature = self.session.sign(self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY)])[0],binaryData2,mechanism)
-        
+        n = bytes(modulus)
+        e = bytes(pubexp)
+        key = rsa.RSAPublicNumbers(
+            e=int(b2a_hex(e), 16), n=int(b2a_hex(n), 16)
+        )
+        key = key.public_key(backend=default_backend())
+    
+
+        print("verify",key.verify(
+                bytes(signature), message+b'asdasdsa', padding.PKCS1v15(), hashes.SHA256()
+            ))
+
+
+
         return signature
 
     def close(self):

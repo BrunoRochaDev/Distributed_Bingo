@@ -1,6 +1,7 @@
 import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives.asymmetric import padding   
+from cryptography.hazmat.primitives.asymmetric import padding  
+from cryptography.hazmat.primitives import padding as sym_padding
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -9,33 +10,56 @@ from cryptography.exceptions import InvalidSignature
 import base64 
 
 class Crypto:
-    """Cryptographic utilities"""
+    """Cryptographic utilities""" 
  
     @classmethod
     def sym_gen(cls) -> tuple:
         """Generates a new AESGCM (key, nonce) tuple""" 
-        key= AESGCM.generate_key(bit_length=128) 
+        key= os.urandom(32)
         return (base64.b64encode(key).decode('ascii'), os.urandom(12))
 
     @classmethod
-    def sym_encrypt(cls, key: bytes, data, nonce: bytes=b'12345678') -> bytes:
+    def sym_encrypt(cls, key: bytes, data) -> bytes:
         """Encrypts data given with given AESGCM key"""
  
         key=base64.b64decode(key.encode('ascii'))
         data=bytes(str(data), 'ascii')
-        cypher = AESGCM(key) 
-        ct = cypher.encrypt(nonce, data, None)  
+
+        cipher = Cipher(algorithms.AES(key), modes.ECB()) 
+
+        # Set up padder
+        padder = sym_padding.PKCS7(128).padder()
+        
+        # Add padding to the bites
+        padded_data = padder.update(data) + padder.finalize() 
+
+        # create encryptor
+        encryptor = cipher.encryptor()
+
+        # encrypt the message
+        ct = encryptor.update(padded_data) + encryptor.finalize()
 
         return base64.b64encode(ct).decode('ascii')
 
     @classmethod
-    def sym_decrypt(cls, key: bytes, crypted_data, nonce: bytes=b'12345678') -> bytes:
+    def sym_decrypt(cls, key: bytes, crypted_data) -> bytes:
         """Decrypts encrypted data given with given AESGCM key"""
         
         crypted_data=base64.b64decode(crypted_data.encode('ascii'))
         key=base64.b64decode(key.encode('ascii'))
-        cypher = AESGCM(key) 
-        data = cypher.decrypt(nonce, crypted_data, None)
+
+        cipher = Cipher(algorithms.AES(key), modes.ECB())
+       # Set up unpadder
+        unpadder = sym_padding.PKCS7(128).unpadder() 
+
+        # create decrepter
+        decryptor = cipher.decryptor()
+
+        # dencrypt the message
+        data = decryptor.update(crypted_data) + decryptor.finalize()  
+
+        # Remove padding from the bites
+        data = unpadder.update(data) + unpadder.finalize() 
          
         return data.decode('ascii')
 

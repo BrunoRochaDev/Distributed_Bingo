@@ -31,7 +31,7 @@ class SmartCardSession():
 
 
 
-    def getPublicPEM(self):
+    def getPublicKey(self):
         """Returns the modulus and pubExponent corresponding to the smart card's public key as bytes"""
 
         modulus, pubexp = self.session.getAttributeValue(

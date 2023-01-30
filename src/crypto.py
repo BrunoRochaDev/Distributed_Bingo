@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
 import base64 
+import hashlib
 
 class Crypto:
     """Cryptographic utilities""" 
@@ -189,4 +190,38 @@ class Crypto:
             encryption_algorithm=serialization.BestAvailableEncryption(b'mypassword')
         )
         return key_string.decode()  
- 
+
+    # Fisher-Yates Algorithm https://favtutor.com/blogs/shuffle-list-python
+    @classmethod
+    def deterministic_shuffle(cls, ls : list, seed : str):
+        """Deterministically shuffles a list given a seed using the Fisher-Yates Algorithm""" 
+
+        rng = [] # array of 16 random numbers as generated from a MD5 hash
+        nonce = 0 # nonce for generating the hash in case the original rng pool runs out
+        for i in range(len(ls)-1, 0, -1):
+
+            # if the random number pool is empty, generate more numbers 
+            if rng == []:
+                digest = hashlib.md5((seed+str(nonce)).encode()).digest() # MD5 hash of the seed + the nonce as a source of uniqueness
+                rng = [x for x in digest] # convert bytes to array of ints
+                nonce += 1 # increase the nonce so that the next digest is different
+
+            # selects a random index using the random number
+            j = rng.pop() % i
+            ls[i],ls[j] = ls[j], ls[i] # swaps two items
+        
+        return ls
+
+    # https://crypto.stackexchange.com/q/78309
+    @classmethod
+    def deterministic_unshuffle(cls, shuffled_ls : list, seed : str):
+        """Reverses the deterministic shuffle and returns the original list"""
+        n = len(shuffled_ls)
+        # perm is [1, 2, ..., n]
+        perm = [i for i in range(1, n + 1)]
+        # apply sigma to perm
+        shuffled_perm = cls.deterministic_shuffle(perm, seed)
+        # zip and unshuffle
+        zipped_ls = list(zip(shuffled_ls, shuffled_perm))
+        zipped_ls.sort(key=lambda x: x[1])
+        return [a for (a, b) in zipped_ls]

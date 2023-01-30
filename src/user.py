@@ -210,7 +210,7 @@ class User:
 
             # unshuffle the deck to get to the state of the previous player
             if seq != 0: 
-                self.encrypted_deck = self.deterministic_unshuffle(self.encrypted_deck, deck_key) # deck key is seed
+                self.encrypted_deck = Crypto.deterministic_unshuffle(self.encrypted_deck, deck_key) # deck key is seed
 
         # now we have the decrypted, unshuffled deck
         self.encrypted_deck = [int(num) for num in self.encrypted_deck] # converts str to int
@@ -240,7 +240,7 @@ class User:
         self.cards = {}
         for seq in range(1,total):
             seed = self.deck_keys[seq]
-            self.cards[seq] = self.deterministic_shuffle(self.encrypted_deck, seed)[:self.card_size] 
+            self.cards[seq] = Crypto.deterministic_shuffle(self.encrypted_deck, seed)[:self.card_size] 
             print(f'{self.users[seq].nickname} {"(You)" if seq == self.sequence else ""} : {self.cards[seq]}')
 
         # now that the deck and card are known, find the winner
@@ -277,25 +277,6 @@ class User:
         print('[NET] Powering off...')
         time.sleep(1)
         self.poweroff()
-
-    # https://crypto.stackexchange.com/q/78309
-    def deterministic_shuffle(self, ls, seed : str):
-        """Deterministically shuffles a list given a seed""" 
-        random.seed(seed)
-        random.shuffle(ls)
-        return ls
-
-    # https://crypto.stackexchange.com/q/78309
-    def deterministic_unshuffle(self, shuffled_ls, seed : str):
-        n = len(shuffled_ls)
-        # perm is [1, 2, ..., n]
-        perm = [i for i in range(1, n + 1)]
-        # apply sigma to perm
-        shuffled_perm = self.deterministic_shuffle(perm, seed)
-        # zip and unshuffle
-        zipped_ls = list(zip(shuffled_ls, shuffled_perm))
-        zipped_ls.sort(key=lambda x: x[1])
-        return [a for (a, b) in zipped_ls]
 
     def poweroff(self):
         """Shutdowns the server"""

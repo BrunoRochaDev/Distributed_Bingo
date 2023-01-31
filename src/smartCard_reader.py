@@ -1,6 +1,15 @@
 import PyKCS11
 import binascii
 from asn1crypto import pem, x509
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.backends import default_backend
+from src.crypto import Crypto
+from cryptography.hazmat.primitives import hashes
+import hashlib
+from cryptography.hazmat.primitives.asymmetric import rsa
+from binascii import a2b_hex, b2a_hex
+from cryptography.hazmat.primitives.asymmetric import padding   
+
 
 
 lib = '/usr/lib/x86_64-linux-gnu/pkcs11/opensc-pkcs11.so'
@@ -19,51 +28,39 @@ class SmartCardSession():
         self.session.login(loginCred)
 
         self.pubKey =self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY)])[0]
-        
-        self.prikey =  self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY)])[0]
-
-    def getKeys(self):
-        """Retuns Public and Private keys"""
 
 
-        return (self.session.findObjects([
-                  (PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY), 
-                  ])[0], self.session.findObjects([
-                  (PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY), 
-                  ])[0])
+
+    def getPublicKey(self):
+        """Returns the modulus and pubExponent corresponding to the smart card's public key as bytes"""
+
+        modulus, pubexp = self.session.getAttributeValue(
+                self.pubKey, [PyKCS11.CKA_MODULUS, PyKCS11.CKA_PUBLIC_EXPONENT]
+        )
 
 
-    def getPublicPEM(self):
+        return bytes(modulus),bytes(pubexp)
 
-        dict = self.pubKey.to_dict()
-        cka_value = dict.get("CKA_VALUE")
-        cert_der = bytes(cka_value)
+    def sign(self,message: bytes):
+       
 
+        signature = self.session.sign(
+                self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PRIVATE_KEY)])[0], message, PyKCS11.Mechanism(PyKCS11.CKM_SHA256_RSA_PKCS, None)
+            )
 
-        return pem.armor('PUBLIC KEY', cert_der)
+        return signature
 
-    def getCert(self):
-        result = []
-        cert_pem = []
-        certs = self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_CERTIFICATE)])
-        for cert in certs:
-            cka_value, cka_id = self.session.getAttributeValue(cert, [PyKCS11.CKA_VALUE, PyKCS11.CKA_ID])
-            cert_der = bytes(cka_value)
-            cert = x509.Certificate.load(cert_der)
-            # Write out a PEM encoded value
-            cert_pem = pem.armor('CERTIFICATE', cert_der)
-            result.append(cert)
-        
-        return cert_pem
+    def close(self):
+        self.session.logout()
+        self.session.closeSession()
 
-
+        return
 
 
 
 if __name__ == '__main__':
+    
     smart = SmartCardSession("1111") 
+    result = smart.getPublicPEM()
+    print(result.decode("ascii"))
 
-
-
-    result = smart.getCert()
-    print(result.decode())

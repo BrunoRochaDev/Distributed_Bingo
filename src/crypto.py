@@ -7,8 +7,10 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.exceptions import InvalidSignature
-import base64 
-import hashlib
+import base64  
+from cryptography.hazmat.backends import default_backend
+from binascii import a2b_hex, b2a_hex 
+import hashlib 
 
 class Crypto:
     """Cryptographic utilities""" 
@@ -162,6 +164,37 @@ class Crypto:
             return False
 
         return True
+
+
+    @classmethod
+    def verifyFromCard(cls, modulus: bytes, pubexp: bytes, message: bytes, signature: bytes) -> bool:
+        """Verifies if given message matches with given signature"""
+
+        public_key = Crypto.load_public_key_from_SC(modulus,pubexp)
+
+        try:  
+            public_key.verify(
+                bytes(signature), message, padding.PKCS1v15(), hashes.SHA256()
+            )
+        except InvalidSignature:
+            return False
+        except:
+            print("Unidentified Error")
+            return False
+
+        return True
+
+
+    @classmethod
+    def load_public_key_from_SC(cls,modulus,pubexp):
+
+        n = modulus
+        e = pubexp
+        key = rsa.RSAPublicNumbers(
+            e=int(b2a_hex(e), 16), n=int(b2a_hex(n), 16)
+        )
+        key = key.public_key(backend=default_backend())
+        return key
 
     @classmethod
     def load_private_key(cls, key_string: str):

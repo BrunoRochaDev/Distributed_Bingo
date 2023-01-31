@@ -61,7 +61,7 @@ class Player(User):
         print('[GAME] Generating card...')
 
         # Shuffle the deck deterministically
-        msg.deck = self.deterministic_shuffle(msg.deck, self.deck_key)
+        msg.deck = Crypto.deterministic_shuffle(msg.deck, self.deck_key)
         new_deck = [Crypto.sym_encrypt(self.deck_key, num) for num in msg.deck]
         msg.deck = new_deck
 

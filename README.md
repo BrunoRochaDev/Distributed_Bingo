@@ -1,8 +1,8 @@
 # Secure_Bingo
 
-# Changes from first Submission
+## Changes from first submission
 
-All changes can are listed and explained in the changes.pdf file or in the report.pdf file along with the previous report.
+### All changes since the first delivery are listed and explained in the changes.pdf file or at the end of the report.pdf file along with the previous report.
 
 
 ## _Assigment 2_

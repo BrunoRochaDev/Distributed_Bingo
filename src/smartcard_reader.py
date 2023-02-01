@@ -7,7 +7,7 @@ lib = '/usr/lib64/pkcs11/opensc-pkcs11.so' # Fedora location using dnf install o
 class SmartCardSession():
     """Smart Card Session Utilities"""
 
-    def __init__(self,loginCred: str) -> None:
+    def __init__(self, pin : str) -> None:
         """Generates a PyKCS11 session, required Citizen Card PIN code"""
         self.pkcs11 = PyKCS11.PyKCS11Lib()
         
@@ -25,7 +25,17 @@ class SmartCardSession():
             return None
 
         self.session = self.pkcs11.openSession(slot, PyKCS11.CKF_SERIAL_SESSION | PyKCS11.CKF_RW_SESSION)
-        self.session.login(loginCred)
+
+        # attempt to login using pin
+        try:
+            self.session.login(pin)
+        except PyKCS11.PyKCS11Error as e:
+            if str(e).contains("Incorrect PIN"):
+                print("[ERROR] Incorrect PIN. Too many incorrect guesses will block the card.")
+                return None
+            else:
+                print("[ERROR] An error occurred while creating a session. This smartcard might be blocked.")
+                return None
 
         self.pubKey = self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY)])[0]
 

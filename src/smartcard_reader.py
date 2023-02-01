@@ -64,7 +64,3 @@ class SmartCardSession():
         """Closes the PyKCS11 session"""
         self.session.logout()
         self.session.closeSession()
-
-if __name__ == '__main__':
-    sc = SmartCardSession("1111") 
-    print(sc.getPublicKey())

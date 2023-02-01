@@ -1,0 +1,3 @@
+#note: needs python3-devel package
+swig
+PyKCS11

@@ -1,4 +1,10 @@
 # Secure_Bingo
+
+# Changes from first Submission
+
+All changes can are listed and explained in the changes.pdf file or in the report.pdf file along with the previous report.
+
+
 ## _Assigment 2_
 
 Project Documentation

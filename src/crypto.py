@@ -165,6 +165,7 @@ class Crypto:
 
         return True
 
+    # SMARTCARD STUFF
 
     @classmethod
     def verifyFromCard(cls, modulus: bytes, pubexp: bytes, message: bytes, signature: bytes) -> bool:
@@ -184,7 +185,6 @@ class Crypto:
 
         return True
 
-
     @classmethod
     def load_public_key_from_SC(cls,modulus,pubexp):
 
@@ -195,6 +195,8 @@ class Crypto:
         )
         key = key.public_key(backend=default_backend())
         return key
+
+    # END OF SMARTCARD STUFF
 
     @classmethod
     def load_private_key(cls, key_string: str):

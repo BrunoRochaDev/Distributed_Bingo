@@ -1,16 +1,8 @@
 import PyKCS11
-import binascii
-from asn1crypto import pem, x509
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.backends import default_backend
-from src.crypto import Crypto
-from cryptography.hazmat.primitives import hashes
-import hashlib
-from cryptography.hazmat.primitives.asymmetric import rsa
-from binascii import a2b_hex, b2a_hex
-from cryptography.hazmat.primitives.asymmetric import padding   
 
-lib = '/usr/lib/x86_64-linux-gnu/pkcs11/opensc-pkcs11.so'
+# PyKCS11 does not include a PKCS11 library. We'll use opensc
+#lib = '/usr/lib/x86_64-linux-gnu/pkcs11/opensc-pkcs11.so' # Mint location using apt install opensc-pkcs11
+lib = '/usr/lib64/pkcs11/opensc-pkcs11.so' # Fedora location using dnf install opensc
 
 class SmartCardSession():
     """Smart Card Session Utilities"""
@@ -18,9 +10,19 @@ class SmartCardSession():
     def __init__(self,loginCred: str) -> None:
         """Generates a PyKCS11 session, required Citizen Card PIN code"""
         self.pkcs11 = PyKCS11.PyKCS11Lib()
-        self.pkcs11.load(lib)
+        
+        # load PKCS11 library
+        try:
+            self.pkcs11.load(lib)
+        except:
+            print(f"[ERROR] Could not find valid PKCS11 library at '{1+1}'.")
+            return None
 
-        slot = self.pkcs11.getSlotList(tokenPresent=True)[0]
+        try:
+            slot = self.pkcs11.getSlotList(tokenPresent=True)[0]
+        except:
+            print("[ERROR] No smartcard / smartcard reader detected. Failed to create session.")
+            return None
 
         self.session = self.pkcs11.openSession(slot, PyKCS11.CKF_SERIAL_SESSION | PyKCS11.CKF_RW_SESSION)
         self.session.login(loginCred)
@@ -50,7 +52,5 @@ class SmartCardSession():
         self.session.closeSession()
 
 if __name__ == '__main__':
-    
-    smart = SmartCardSession("1111") 
-    result = smart.getPublicPEM()
-    print(result.decode("ascii"))
+    sc = SmartCardSession("1111") 
+    print(sc.getPublicKey())

@@ -1,16 +1,4 @@
-\contentsline {section}{\numberline {1}Introduction}{2}%
-\contentsline {section}{\numberline {2}Entities}{3}%
-\contentsline {section}{\numberline {3}Walk-through}{3}%
-\contentsline {subsection}{\numberline {3.1}Authentication}{3}%
-\contentsline {subsection}{\numberline {3.2}Registration}{4}%
-\contentsline {subsection}{\numberline {3.3}Deck and Card Generation}{5}%
-\contentsline {subsection}{\numberline {3.4}Winner Detection}{6}%
-\contentsline {section}{\numberline {4}Changes From First Delivery}{8}%
-\contentsline {subsection}{\numberline {4.1}Smart Card Authentication}{8}%
-\contentsline {subsection}{\numberline {4.2}AES Block Cipher Mode}{9}%
-\contentsline {subsection}{\numberline {4.3}Cross Language Interoperability}{10}%
-\contentsline {section}{\numberline {5}Protocol}{12}%
-\contentsline {subsection}{\numberline {5.1}Communication Protocol}{12}%
-\contentsline {subsubsection}{\numberline {5.1.1}Messages}{12}%
-\contentsline {subsection}{\numberline {5.2}Cryptography Protocol, Crypto (Class)}{15}%
-\contentsline {subsubsection}{\numberline {5.2.1}Methods}{15}%
+\contentsline {section}{\numberline {1}Changes From First Delivery}{2}%
+\contentsline {subsection}{\numberline {1.1}Smart Card Authentication}{2}%
+\contentsline {subsection}{\numberline {1.2}AES Block Cipher Mode}{3}%
+\contentsline {subsection}{\numberline {1.3}Cross Language Interoperability}{4}%

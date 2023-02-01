@@ -1,3 +1,5 @@
-#note: needs python3-devel package
+#packages needed:
+#python3-devel package
+#opensc-pkcs11
 swig
 PyKCS11

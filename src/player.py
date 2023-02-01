@@ -3,13 +3,12 @@ from src.crypto import Crypto
 
 class Player(User):
 
-    def __init__(self, nickname : str):
+    def __init__(self, nickname : str, pin : str):
         print(f'You are a PLAYER. Your nickname is "{nickname}".')
         
-        #self.CC_public = nickname+'_CC' 
-        self.CC_private, self.CC_public = Crypto.asym_gen()
+        #self.CC_private, self.CC_public = Crypto.asym_gen()
 
-        super().__init__(nickname)
+        super().__init__(nickname, pin)
 
     def handle_input(self, stdin):
         """Receives the typing input"""
@@ -17,7 +16,12 @@ class Player(User):
 
         if text == 'AUTH' and not self.authenticated:
             print('[AUTH] Asking the playing area for a challenge...')
-            Proto.send_msg(self.sock, Authenticate(self.CC_public))
+            # convert tuple of bytes to tuple of base64 strings
+            modulus, pubexp = self.CC_public
+            modulus, pubexp = base64.b64encode(modulus).decode('ascii'), base64.b64encode(pubexp).decode('ascii')
+            encoded_CC_public = (modulus, pubexp)
+
+            Proto.send_msg(self.sock, Authenticate(encoded_CC_public))
         elif text == 'GETUSERS' and self.authenticated:
             print('[SEC] Asking the playing area for the list of registed users...')
             Proto.send_msg(self.sock, GetUsers(self.CC_public, "signature"))

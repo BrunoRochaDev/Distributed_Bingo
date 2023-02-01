@@ -7,37 +7,41 @@ lib = '/usr/lib64/pkcs11/opensc-pkcs11.so' # Fedora location using dnf install o
 class SmartCardSession():
     """Smart Card Session Utilities"""
 
-    def __init__(self, pin : str) -> None:
+    # static method for creating session object
+    @classmethod
+    def create(cls, pin : str) -> None:
         """Generates a PyKCS11 session, required Citizen Card PIN code"""
-        self.pkcs11 = PyKCS11.PyKCS11Lib()
+
+        session = SmartCardSession()
+        session.pkcs11 = PyKCS11.PyKCS11Lib()
         
         # load PKCS11 library
         try:
-            self.pkcs11.load(lib)
+            session.pkcs11.load(lib)
         except:
-            print(f"[ERROR] Could not find valid PKCS11 library at '{1+1}'.")
+            print(f"[ERROR] Could not find valid PKCS11 library at '{lib}'.")
             return None
 
         try:
-            slot = self.pkcs11.getSlotList(tokenPresent=True)[0]
+            slot = session.pkcs11.getSlotList(tokenPresent=True)[0]
         except:
             print("[ERROR] No smartcard / smartcard reader detected. Failed to create session.")
             return None
 
-        self.session = self.pkcs11.openSession(slot, PyKCS11.CKF_SERIAL_SESSION | PyKCS11.CKF_RW_SESSION)
+        session.session = session.pkcs11.openSession(slot, PyKCS11.CKF_SERIAL_SESSION | PyKCS11.CKF_RW_SESSION)
 
         # attempt to login using pin
         try:
-            self.session.login(pin)
+            session.session.login(pin)
         except PyKCS11.PyKCS11Error as e:
-            if str(e).contains("Incorrect PIN"):
+            if "Incorrect PIN" in str(e):
                 print("[ERROR] Incorrect PIN. Too many incorrect guesses will block the card.")
                 return None
             else:
                 print("[ERROR] An error occurred while creating a session. This smartcard might be blocked.")
                 return None
 
-        self.pubKey = self.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY)])[0]
+        session.pubKey = session.session.findObjects([(PyKCS11.CKA_CLASS, PyKCS11.CKO_PUBLIC_KEY)])[0]
 
     def getPublicKey(self) -> tuple[bytes, bytes]:
         """Returns the modulus and pubExponent corresponding to the smart card's public key as bytes"""

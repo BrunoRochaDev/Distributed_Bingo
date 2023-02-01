@@ -8,6 +8,7 @@ import time # for sleeping
 import os
 
 from src.protocol import *
+from src.smartcard_reader import SmartCardSession
 
 class User:
     """This is a generic class for state and logic common to both players and callers."""
@@ -18,7 +19,18 @@ class User:
     orig_fl = fcntl.fcntl(sys.stdin, fcntl.F_GETFL)
     fcntl.fcntl(sys.stdin, fcntl.F_SETFL, orig_fl | os.O_NONBLOCK)
 
-    def __init__(self, nickname : str):
+    def __init__(self, nickname : str, pin : str):
+
+        # read smartcard
+        self.CC_session = SmartCardSession.create(pin)
+        
+        # if PIN failed, stop here
+        if self.CC_session == None:
+            return
+
+        self.pin = pin
+        self.CC_public = self.CC_session.getPublicKey()
+
         self.nickname = nickname
         self.sequence = None # given by the playing area
         self.users = {} # userdata of all players
@@ -120,12 +132,9 @@ class User:
                 return
 
             print(f'[AUTH] Received "{msg.challenge}" challenge from the playing area. Responding...')
- 
 
-            response = Crypto.sign(self.CC_private, msg.challenge)
+            response = self.CC_session.sign(msg.challenge) # Sign the challenge
             msg.response = base64.b64encode(response).decode('ascii') # Transform to sending format
-
-
 
             # send it back to the playing area
             Proto.send_msg(sock, msg)

@@ -9,7 +9,10 @@ if __name__ == "__main__":
     # nickname
     parser.add_argument("nickname", type=str, help="the nickname of the player")
 
+    # pin
+    parser.add_argument("pin", type=str, help="the PIN of the smartcard")
+
     args = parser.parse_args()
 
     # create playing area object
-    player = Player(args.nickname)
+    player = Player(args.nickname, args.pin)

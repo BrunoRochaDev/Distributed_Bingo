@@ -16,7 +16,7 @@ class Message:
 
 class Authenticate(Message):
     """Message for players authenticating themselves to the playing area. Uses challenge-response authentication"""
-    def __init__(self, public_key : str, challenge : str = None, response : str = None, success : bool = False):
+    def __init__(self, public_key : tuple[bytes,bytes], challenge : str = None, response : str = None, success : bool = False):
         self.header = 'AUTH'
         self.public_key = public_key
         self.challenge = challenge

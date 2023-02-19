@@ -1,5 +1,10 @@
 # Secure_Bingo
 
+## Preface
+This was ours (Bruno Moura, Rafael Remígio and João Teles) submission for our cybersecurity course's (SIO) second practical project.
+
+At our first submission we received a 16.8 mark, and after further improvements we received a 19.2. Both out of 20.
+
 ## Changes from first submission
 
 ### All changes since the first delivery are listed and explained in the report/changes.pdf file or at the end of the report.pdf file along with the previous report.
